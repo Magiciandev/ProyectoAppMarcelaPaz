@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">MPAZ PRO 2°</string>
+
+    <!-- Pantalla de bienvenida -->
+    <string name="bienvenida_titulo">¡Bienvenido a MPAZ PRO 2°!</string>
+    <string name="bienvenida_subtitulo">Tu espacio para aprender en Segundo Básico</string>
+    <string name="bienvenida_colegio">Escuela Escritora Marcela Paz</string>
+
+    <!-- Asignaturas -->
+    <string name="asignatura_lenguaje">Lenguaje</string>
+    <string name="asignatura_matematica">Matemática</string>
+    <string name="asignatura_ciencias">Ciencias Naturales</string>
+    <string name="asignatura_historia">Historia</string>
+</resources>
