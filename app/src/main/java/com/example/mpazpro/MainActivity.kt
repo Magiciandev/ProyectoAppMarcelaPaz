@@ -1,27 +1,28 @@
 package com.example.mpazpro
 
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.mpazpro.ui.screens.BienvenidaScreen
+import com.example.mpazpro.data.local.AppDatabase
+import com.example.mpazpro.data.repository.UnidadRepository
+import com.example.mpazpro.ui.navigation.AppNavHost
 import com.example.mpazpro.ui.theme.MpazProTheme
+import com.example.mpazpro.viewmodel.MpazViewModelFactory
 
-// Actividad única: toda la navegación vivirá en Compose (Navigation Compose, Fase 2).
+// Actividad única: toda la navegación vive en Compose (AppNavHost).
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Barras del sistema transparentes con íconos claros, porque la bienvenida es oscura.
-        // Cuando existan pantallas claras, pasar a SystemBarStyle.auto(...).
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
-        )
+        enableEdgeToEdge()
+
+        // Aquí se arma la cadena de dependencias: base de datos -> repositorio -> fábrica de ViewModels.
+        val baseDeDatos = AppDatabase.obtener(applicationContext)
+        val fabrica = MpazViewModelFactory(UnidadRepository(baseDeDatos.unidadDao()))
+
         setContent {
             MpazProTheme {
-                BienvenidaScreen()
+                AppNavHost(factory = fabrica)
             }
         }
     }

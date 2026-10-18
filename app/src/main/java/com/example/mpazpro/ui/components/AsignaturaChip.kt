@@ -14,8 +14,13 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.mpazpro.data.model.Asignaturas
 import com.example.mpazpro.ui.theme.MpazProTheme
 import com.example.mpazpro.ui.theme.Pizarra
+import com.example.mpazpro.ui.theme.TizaBlanca
+import com.example.mpazpro.ui.theme.TizaCiencias
+import com.example.mpazpro.ui.theme.TizaHistoria
+import com.example.mpazpro.ui.theme.TizaLenguaje
 import com.example.mpazpro.ui.theme.TizaMatematica
 
 // Componente sin estado: recibe todo por parámetros (elevación de estado).
@@ -40,6 +45,15 @@ fun AsignaturaChip(
             color = Pizarra
         )
     }
+}
+
+// Cada asignatura conserva siempre su color de tiza.
+fun colorTizaDe(asignatura: String): Color = when (asignatura) {
+    Asignaturas.LENGUAJE -> TizaLenguaje
+    Asignaturas.MATEMATICA -> TizaMatematica
+    Asignaturas.CIENCIAS -> TizaCiencias
+    Asignaturas.HISTORIA -> TizaHistoria
+    else -> TizaBlanca
 }
 
 @Preview(showBackground = true)

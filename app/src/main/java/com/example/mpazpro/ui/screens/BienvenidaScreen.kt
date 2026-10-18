@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mpazpro.R
 import com.example.mpazpro.ui.components.AsignaturaChip
+import com.example.mpazpro.ui.components.IconosBarraEstado
 import com.example.mpazpro.ui.theme.MpazProTheme
 import com.example.mpazpro.ui.theme.Pizarra
 import com.example.mpazpro.ui.theme.PizarraOscura
@@ -39,15 +42,18 @@ import com.example.mpazpro.ui.theme.TizaLenguaje
 import com.example.mpazpro.ui.theme.TizaMatematica
 import kotlinx.coroutines.delay
 
-private const val TOTAL_PASOS = 6
+private const val TOTAL_PASOS = 7
 
-// Pantalla de bienvenida: por ahora solo estética, sin ViewModel ni datos.
-// La entrada es una sola secuencia: primero el título y luego cada "tiza" de asignatura.
+// Pantalla de bienvenida: sin ViewModel ni datos, solo estética y el paso a la app.
+// La entrada es una sola secuencia: título, cada "tiza" de asignatura y, al final, el botón.
 @Composable
 fun BienvenidaScreen(
+    onEntrar: () -> Unit,
     modifier: Modifier = Modifier,
     animar: Boolean = true
 ) {
+    IconosBarraEstado(iconosClaros = true)
+
     var pasoVisible by remember { mutableIntStateOf(if (animar) 0 else TOTAL_PASOS) }
 
     LaunchedEffect(Unit) {
@@ -120,6 +126,20 @@ fun BienvenidaScreen(
                     )
                 }
             }
+            Aparecer(visible = pasoVisible >= 7) {
+                Button(
+                    onClick = onEntrar,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TizaBlanca,
+                        contentColor = Pizarra
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.bienvenida_entrar),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
         }
 
         Text(
@@ -151,6 +171,6 @@ private fun Aparecer(
 @Composable
 private fun BienvenidaScreenPreview() {
     MpazProTheme {
-        BienvenidaScreen(animar = false)
+        BienvenidaScreen(onEntrar = {}, animar = false)
     }
 }

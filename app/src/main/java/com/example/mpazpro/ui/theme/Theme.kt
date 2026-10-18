@@ -24,7 +24,14 @@ private val EsquemaClaro = lightColorScheme(
     surface = ClaroFondo,
     onSurface = ClaroSobreFondo,
     surfaceVariant = ClaroVariante,
-    onSurfaceVariant = ClaroSobreVariante
+    onSurfaceVariant = ClaroSobreVariante,
+    surfaceBright = ClaroSuperficieBrillante,
+    surfaceDim = ClaroSuperficieTenue,
+    surfaceContainerLowest = ClaroSuperficieMinima,
+    surfaceContainerLow = ClaroSuperficieBaja,
+    surfaceContainer = ClaroSuperficieMedia,
+    surfaceContainerHigh = ClaroSuperficieAlta,
+    surfaceContainerHighest = ClaroSuperficieMaxima
 )
 
 private val EsquemaOscuro = darkColorScheme(
@@ -45,7 +52,14 @@ private val EsquemaOscuro = darkColorScheme(
     surface = OscuroFondo,
     onSurface = OscuroSobreFondo,
     surfaceVariant = OscuroVariante,
-    onSurfaceVariant = OscuroSobreVariante
+    onSurfaceVariant = OscuroSobreVariante,
+    surfaceBright = OscuroSuperficieBrillante,
+    surfaceDim = OscuroSuperficieTenue,
+    surfaceContainerLowest = OscuroSuperficieMinima,
+    surfaceContainerLow = OscuroSuperficieBaja,
+    surfaceContainer = OscuroSuperficieMedia,
+    surfaceContainerHigh = OscuroSuperficieAlta,
+    surfaceContainerHighest = OscuroSuperficieMaxima
 )
 
 // Sin color dinámico a propósito: la app mantiene siempre su identidad visual.

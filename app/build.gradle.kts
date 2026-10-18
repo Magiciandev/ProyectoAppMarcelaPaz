@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -53,7 +54,12 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.animation)
 
-    // Se suman en la Fase 1: Navigation Compose, Room (con KSP) y Coil.
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    // Coil (carga de imágenes) se suma en la Fase 5, cuando se use el selector de fotos.
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

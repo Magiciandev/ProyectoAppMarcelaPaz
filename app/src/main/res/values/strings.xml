@@ -5,10 +5,29 @@
     <string name="bienvenida_titulo">¡Bienvenido a MPAZ PRO 2°!</string>
     <string name="bienvenida_subtitulo">Tu espacio para aprender en Segundo Básico</string>
     <string name="bienvenida_colegio">Escuela Escritora Marcela Paz</string>
+    <string name="bienvenida_entrar">Entrar</string>
 
     <!-- Asignaturas -->
     <string name="asignatura_lenguaje">Lenguaje</string>
     <string name="asignatura_matematica">Matemática</string>
     <string name="asignatura_ciencias">Ciencias Naturales</string>
     <string name="asignatura_historia">Historia</string>
+
+    <!-- General -->
+    <string name="volver">Volver</string>
+    <string name="campo_con_error">Campo con error</string>
+
+    <!-- Lista de unidades -->
+    <string name="unidades_titulo">Unidades</string>
+    <string name="unidades_nueva">Nueva unidad</string>
+    <string name="unidades_vacio">Aún no hay unidades. Crea la primera con el botón de abajo.</string>
+
+    <!-- Formulario de unidad -->
+    <string name="form_titulo_pantalla">Nueva unidad</string>
+    <string name="form_label_titulo">Título de la unidad</string>
+    <string name="form_label_oa">Objetivo de aprendizaje (OA)</string>
+    <string name="form_label_asignatura">Asignatura</string>
+    <string name="form_label_contenido">Contenido de estudio</string>
+    <string name="form_guardar">Guardar unidad</string>
+    <string name="form_guardando">Guardando…</string>
 </resources>
