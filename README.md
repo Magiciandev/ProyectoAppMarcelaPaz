@@ -24,9 +24,11 @@ Todos los datos de la app son ficticios.
 |---|---|
 | Esqueleto del proyecto y pantalla de bienvenida | Implementado |
 | Navegación entre pantallas (Navigation Compose) | Implementado |
-| Formularios validados con íconos y mensajes | En curso (formulario de nueva unidad listo) |
+| Formularios validados con íconos y mensajes | Implementado (nueva unidad, login, editor de preguntas) |
 | Persistencia local con Room | En curso (unidades guardadas y listadas) |
-| Flujo UTP (unidades y pruebas) | Pendiente |
+| Login con PIN cifrado (PBKDF2) y panel por rol | Implementado |
+| Flujo UTP (unidades, estados, historial y pruebas) | Implementado |
+| Evaluación del estudiante con intentos y animaciones | Implementado |
 | Flujo Docente (asignación, fechas, intentos) | Pendiente |
 | Flujo Estudiante (contenido y evaluación) | Pendiente |
 | Informes de progreso | Pendiente |
@@ -85,3 +87,8 @@ Requisitos: `minSdk` 29, `compileSdk` 36, AGP 8.12.3, Kotlin 2.0.21, Room 2.6.1.
 
 La guía de arquitectura no menciona estas carpetas, que se agregaron por necesidad:
 `data/local` (Room, espejo de `data/remote`), `viewmodel/validation` y `ui/navigation`.
+
+## Usuarios de prueba (ficticios)
+
+Usuarios: `utp`, `docente`, `ana`, `beto`, `carla` (2° A), `diego`, `eva`, `felipe` (2° B). PIN de todos: `1234`.
+El PIN se guarda cifrado (PBKDF2 con sal), nunca en claro.

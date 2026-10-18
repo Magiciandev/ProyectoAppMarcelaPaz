@@ -15,4 +15,17 @@ interface UnidadDao {
     // Devuelve un Flow: la lista se actualiza sola cada vez que cambia la tabla.
     @Query("SELECT * FROM unidades ORDER BY id DESC")
     fun observarTodas(): Flow<List<Unidad>>
+
+    @Query("SELECT * FROM unidades WHERE id = :id")
+    fun observarPorId(id: Long): Flow<Unidad?>
+
+    @Query("UPDATE unidades SET estado = :estado WHERE id = :id")
+    suspend fun actualizarEstado(id: Long, estado: String)
+
+    @Query("SELECT COUNT(*) FROM unidades")
+    suspend fun contar(): Int
+
+    // Unidades en el estado dado que ya tienen al menos una pregunta (las que se pueden rendir).
+    @Query("SELECT * FROM unidades WHERE estado = :estado AND id IN (SELECT unidadId FROM preguntas) ORDER BY asignatura, id")
+    fun observarConPrueba(estado: String): Flow<List<Unidad>>
 }

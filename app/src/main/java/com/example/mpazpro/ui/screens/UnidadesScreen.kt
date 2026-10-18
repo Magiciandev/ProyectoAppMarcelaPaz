@@ -43,17 +43,24 @@ import com.example.mpazpro.viewmodel.UnidadesViewModel
 @Composable
 fun UnidadesScreen(
     viewModel: UnidadesViewModel,
+    editable: Boolean,
+    onAbrir: (Long) -> Unit,
     onNuevaUnidad: () -> Unit,
     onVolver: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    UnidadesContenido(uiState = uiState, onNuevaUnidad = onNuevaUnidad, onVolver = onVolver)
+    UnidadesContenido(
+        uiState = uiState, editable = editable, onAbrir = onAbrir,
+        onNuevaUnidad = onNuevaUnidad, onVolver = onVolver
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnidadesContenido(
     uiState: UnidadesUiState,
+    editable: Boolean,
+    onAbrir: (Long) -> Unit,
     onNuevaUnidad: () -> Unit,
     onVolver: () -> Unit
 ) {
@@ -74,11 +81,13 @@ fun UnidadesContenido(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onNuevaUnidad,
-                icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.unidades_nueva)) }
-            )
+            if (editable) {
+                ExtendedFloatingActionButton(
+                    onClick = onNuevaUnidad,
+                    icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+                    text = { Text(stringResource(R.string.unidades_nueva)) }
+                )
+            }
         }
     ) { innerPadding ->
         Box(
@@ -115,7 +124,8 @@ fun UnidadesContenido(
                                 UnidadCard(
                                     titulo = unidad.titulo,
                                     detalle = "${unidad.objetivoAprendizaje} · ${unidad.estado}",
-                                    asignatura = unidad.asignatura
+                                    asignatura = unidad.asignatura,
+                                    onClick = { onAbrir(unidad.id) }
                                 )
                             }
                         }
@@ -145,6 +155,8 @@ private fun UnidadesConDatosPreview() {
                     )
                 )
             ),
+            editable = true,
+            onAbrir = {},
             onNuevaUnidad = {},
             onVolver = {}
         )
@@ -157,6 +169,8 @@ private fun UnidadesVaciasPreview() {
     MpazProTheme {
         UnidadesContenido(
             uiState = UnidadesUiState.Listo(emptyList()),
+            editable = true,
+            onAbrir = {},
             onNuevaUnidad = {},
             onVolver = {}
         )

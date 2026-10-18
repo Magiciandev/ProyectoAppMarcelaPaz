@@ -30,4 +30,60 @@
     <string name="form_label_contenido">Contenido de estudio</string>
     <string name="form_guardar">Guardar unidad</string>
     <string name="form_guardando">Guardando…</string>
+
+
+    <!-- Login -->
+    <string name="login_titulo">Ingresa a tu cuenta</string>
+    <string name="login_usuario">Usuario</string>
+    <string name="login_pin">PIN (4 números)</string>
+    <string name="login_ingresar">Ingresar</string>
+    <string name="login_ingresando">Ingresando…</string>
+    <string name="login_ayuda">Datos de prueba: utp, docente, ana, beto, carla, diego, eva o felipe. PIN: 1234</string>
+
+    <!-- Panel -->
+    <string name="panel_hola">Hola, %1$s</string>
+    <string name="panel_perfil">Perfil: %1$s</string>
+    <string name="panel_unidades_utp">Administrar unidades</string>
+    <string name="panel_unidades_docente">Ver unidades publicadas</string>
+    <string name="panel_evaluaciones">Mis evaluaciones</string>
+    <string name="panel_cerrar">Cerrar sesión</string>
+
+    <!-- Detalle de unidad -->
+    <string name="detalle_titulo">Detalle de unidad</string>
+    <string name="detalle_historial">Historial</string>
+    <string name="detalle_enviar">Enviar a revisión</string>
+    <string name="detalle_aprobar">Aprobar y publicar</string>
+    <string name="detalle_rechazar">Rechazar</string>
+    <string name="detalle_deshabilitar">Deshabilitar</string>
+    <string name="detalle_preguntas">Editar preguntas de la prueba</string>
+    <string name="detalle_no_existe">La unidad no existe</string>
+
+    <!-- Editor de preguntas -->
+    <string name="preguntas_titulo">Preguntas de la prueba</string>
+    <string name="preg_label_texto">Pregunta</string>
+    <string name="preg_label_opcion">Alternativa %1$s</string>
+    <string name="preg_correcta">Marcar alternativa %1$s como correcta</string>
+    <string name="preg_agregar">Agregar pregunta</string>
+    <string name="preg_lista">Preguntas guardadas (%1$d)</string>
+    <string name="preg_vacio">Aún no hay preguntas.</string>
+    <string name="preg_eliminar">Eliminar pregunta</string>
+
+    <!-- Evaluaciones del estudiante -->
+    <string name="est_titulo">Mis evaluaciones</string>
+    <string name="est_vacio">Todavía no hay evaluaciones disponibles.</string>
+    <string name="est_sin_intentos">Aún no la has rendido</string>
+    <string name="est_ultimo">Último resultado: %1$d%%</string>
+    <string name="eval_titulo">Evaluación</string>
+    <string name="eval_progreso">Pregunta %1$d de %2$d</string>
+    <string name="eval_acierto">¡Muy bien!</string>
+    <string name="eval_error">Casi. La respuesta correcta está en verde.</string>
+    <string name="eval_siguiente">Siguiente</string>
+    <string name="eval_terminar">Ver resultado</string>
+    <string name="eval_bloqueada">Ya usaste tus %1$d intentos. Habla con tu profesora o profesor.</string>
+    <string name="eval_sin_preguntas">Esta unidad todavía no tiene preguntas.</string>
+    <string name="eval_resultado">Obtuviste %1$d de %2$d</string>
+    <string name="eval_restantes">Te quedan %1$d intentos</string>
+    <string name="eval_volver_lista">Volver a mis evaluaciones</string>
+    <string name="eval_correcta_desc">Respuesta correcta</string>
+    <string name="eval_incorrecta_desc">Respuesta incorrecta</string>
 </resources>

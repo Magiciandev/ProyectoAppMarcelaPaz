@@ -15,3 +15,9 @@ object EstadoUnidad {
     const val EN_REVISION = "En revisión"
     const val PUBLICADO = "Publicado"
 }
+
+object Roles {
+    const val UTP = "Jefatura UTP"
+    const val DOCENTE = "Docente"
+    const val ESTUDIANTE = "Estudiante"
+}
