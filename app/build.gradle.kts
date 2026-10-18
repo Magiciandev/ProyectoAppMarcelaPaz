@@ -59,7 +59,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Coil (carga de imágenes) se suma en la Fase 5, cuando se use el selector de fotos.
+    // Coil: muestra la imagen de apoyo elegida con el selector de fotos.
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
