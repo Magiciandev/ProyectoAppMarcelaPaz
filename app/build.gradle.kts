@@ -38,6 +38,10 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        // Las pruebas unitarias no cargan Android: sus llamadas devuelven valores por defecto.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -59,9 +63,11 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Coil (carga de imágenes) se suma en la Fase 5, cuando se use el selector de fotos.
+    // Coil: muestra la imagen de apoyo elegida con el selector de fotos.
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

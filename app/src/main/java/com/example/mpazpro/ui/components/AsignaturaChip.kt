@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mpazpro.data.model.Asignaturas
 import com.example.mpazpro.ui.theme.MpazProTheme
-import com.example.mpazpro.ui.theme.Pizarra
+import com.example.mpazpro.ui.theme.TextoSobreTiza
 import com.example.mpazpro.ui.theme.TizaBlanca
 import com.example.mpazpro.ui.theme.TizaCiencias
 import com.example.mpazpro.ui.theme.TizaHistoria
@@ -42,7 +42,7 @@ fun AsignaturaChip(
         Text(
             text = nombre,
             style = MaterialTheme.typography.labelLarge,
-            color = Pizarra
+            color = TextoSobreTiza
         )
     }
 }

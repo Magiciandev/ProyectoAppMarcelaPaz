@@ -1,5 +1,7 @@
 package com.example.mpazpro.ui.screens
 
+import com.example.mpazpro.ui.components.EstadoCarga
+import com.example.mpazpro.ui.components.EstadoVacio
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,20 +41,19 @@ import com.example.mpazpro.ui.theme.MpazProTheme
 import com.example.mpazpro.viewmodel.UnidadesUiState
 import com.example.mpazpro.viewmodel.UnidadesViewModel
 
-// Panel de la Jefatura UTP: lista de unidades con su estado. Pantalla con estado.
+// Pantalla con estado: observa el ViewModel y delega el dibujo en UnidadesContenido.
 @Composable
 fun UnidadesScreen(
     viewModel: UnidadesViewModel,
+    editable: Boolean,
+    onAbrir: (Long) -> Unit,
     onNuevaUnidad: () -> Unit,
-    onAbrirUnidad: (Long) -> Unit,
-    onCerrarSesion: () -> Unit
+    onVolver: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     UnidadesContenido(
-        uiState = uiState,
-        onNuevaUnidad = onNuevaUnidad,
-        onAbrirUnidad = onAbrirUnidad,
-        onCerrarSesion = onCerrarSesion
+        uiState = uiState, editable = editable, onAbrir = onAbrir,
+        onNuevaUnidad = onNuevaUnidad, onVolver = onVolver
     )
 }
 
@@ -60,9 +61,10 @@ fun UnidadesScreen(
 @Composable
 fun UnidadesContenido(
     uiState: UnidadesUiState,
+    editable: Boolean,
+    onAbrir: (Long) -> Unit,
     onNuevaUnidad: () -> Unit,
-    onAbrirUnidad: (Long) -> Unit,
-    onCerrarSesion: () -> Unit
+    onVolver: () -> Unit
 ) {
     IconosBarraEstado(iconosClaros = isSystemInDarkTheme())
 
@@ -70,22 +72,24 @@ fun UnidadesContenido(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.unidades_titulo)) },
-                actions = {
-                    IconButton(onClick = onCerrarSesion) {
+                navigationIcon = {
+                    IconButton(onClick = onVolver) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = stringResource(R.string.cerrar_sesion)
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 }
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onNuevaUnidad,
-                icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.unidades_nueva)) }
-            )
+            if (editable) {
+                ExtendedFloatingActionButton(
+                    onClick = onNuevaUnidad,
+                    icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
+                    text = { Text(stringResource(R.string.unidades_nueva)) }
+                )
+            }
         }
     ) { innerPadding ->
         Box(
@@ -95,7 +99,7 @@ fun UnidadesContenido(
             contentAlignment = Alignment.Center
         ) {
             when (uiState) {
-                is UnidadesUiState.Cargando -> CircularProgressIndicator()
+                is UnidadesUiState.Cargando -> EstadoCarga()
                 is UnidadesUiState.Error -> Text(
                     text = uiState.mensaje,
                     color = MaterialTheme.colorScheme.error,
@@ -104,12 +108,7 @@ fun UnidadesContenido(
                 )
                 is UnidadesUiState.Listo -> {
                     if (uiState.unidades.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.unidades_vacio),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(32.dp)
-                        )
+                        EstadoVacio(stringResource(R.string.unidades_vacio))
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
@@ -124,7 +123,7 @@ fun UnidadesContenido(
                                     detalle = unidad.objetivoAprendizaje,
                                     asignatura = unidad.asignatura,
                                     estado = unidad.estado,
-                                    onClick = { onAbrirUnidad(unidad.id) }
+                                    onClick = { onAbrir(unidad.id) }
                                 )
                             }
                         }
@@ -144,19 +143,20 @@ private fun UnidadesConDatosPreview() {
                 listOf(
                     Unidad(
                         id = 2, titulo = "Los sentidos", objetivoAprendizaje = "OA04",
-                        asignatura = Asignaturas.CIENCIAS, estado = EstadoUnidad.EN_REVISION,
+                        asignatura = Asignaturas.CIENCIAS, estado = EstadoUnidad.BORRADOR,
                         contenido = "Exploraremos los cinco sentidos."
                     ),
                     Unidad(
                         id = 1, titulo = "Suma y resta", objetivoAprendizaje = "OA05",
-                        asignatura = Asignaturas.MATEMATICA, estado = EstadoUnidad.PUBLICADO,
+                        asignatura = Asignaturas.MATEMATICA, estado = EstadoUnidad.BORRADOR,
                         contenido = "Sumar es juntar cantidades."
                     )
                 )
             ),
+            editable = true,
+            onAbrir = {},
             onNuevaUnidad = {},
-            onAbrirUnidad = {},
-            onCerrarSesion = {}
+            onVolver = {}
         )
     }
 }
@@ -167,9 +167,10 @@ private fun UnidadesVaciasPreview() {
     MpazProTheme {
         UnidadesContenido(
             uiState = UnidadesUiState.Listo(emptyList()),
+            editable = true,
+            onAbrir = {},
             onNuevaUnidad = {},
-            onAbrirUnidad = {},
-            onCerrarSesion = {}
+            onVolver = {}
         )
     }
 }

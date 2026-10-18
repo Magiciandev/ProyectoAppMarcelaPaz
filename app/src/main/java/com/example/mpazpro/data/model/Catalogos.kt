@@ -17,14 +17,11 @@ object EstadoUnidad {
 }
 
 object Roles {
-    const val UTP = "UTP"
+    const val UTP = "Jefatura UTP"
     const val DOCENTE = "Docente"
     const val ESTUDIANTE = "Estudiante"
 }
 
 object Cursos {
-    const val A = "2° A"
-    const val B = "2° B"
-
-    val todos = listOf(A, B)
+    val todos = listOf("2° A", "2° B")
 }

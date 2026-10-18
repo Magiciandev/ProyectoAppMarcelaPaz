@@ -16,7 +16,6 @@
     <!-- General -->
     <string name="volver">Volver</string>
     <string name="campo_con_error">Campo con error</string>
-    <string name="cerrar_sesion">Cerrar sesión</string>
 
     <!-- Lista de unidades -->
     <string name="unidades_titulo">Unidades</string>
@@ -32,28 +31,109 @@
     <string name="form_guardar">Guardar unidad</string>
     <string name="form_guardando">Guardando…</string>
 
-    <!-- Ingreso -->
-    <string name="login_titulo">Iniciar sesión</string>
-    <string name="login_label_usuario">Usuario</string>
-    <string name="login_label_pin">PIN de 4 dígitos</string>
+
+    <!-- Login -->
+    <string name="login_titulo">Ingresa a tu cuenta</string>
+    <string name="login_usuario">Usuario</string>
+    <string name="login_pin">PIN (4 números)</string>
     <string name="login_ingresar">Ingresar</string>
     <string name="login_ingresando">Ingresando…</string>
-    <string name="login_pista">Usuarios de prueba: utp, docente, est001 a est006. PIN: 1234</string>
+    <string name="login_ayuda">Datos de prueba: utp, docente, ana, beto, carla, diego, eva o felipe. PIN: 1234</string>
 
-    <!-- Paneles por rol -->
-    <string name="panel_saludo">Hola, %1$s</string>
-    <string name="panel_curso">Curso: %1$s</string>
-    <string name="panel_docente_titulo">Panel del docente</string>
-    <string name="panel_docente_desc">Aquí estará la asignación de unidades, las fechas, los intentos y los informes.</string>
-    <string name="panel_estudiante_titulo">Panel del estudiante</string>
-    <string name="panel_estudiante_desc">Aquí estarán tus asignaturas, el contenido de estudio y las evaluaciones.</string>
+    <!-- Panel -->
+    <string name="panel_hola">Hola, %1$s</string>
+    <string name="panel_perfil">Perfil: %1$s</string>
+    <string name="panel_unidades_utp">Administrar unidades</string>
+    <string name="panel_unidades_docente">Ver unidades publicadas</string>
+    <string name="panel_evaluaciones">Mis evaluaciones</string>
+    <string name="panel_cerrar">Cerrar sesión</string>
 
     <!-- Detalle de unidad -->
-    <string name="detalle_titulo">Detalle de la unidad</string>
-    <string name="detalle_contenido">Contenido de estudio</string>
+    <string name="detalle_titulo">Detalle de unidad</string>
     <string name="detalle_historial">Historial</string>
     <string name="detalle_enviar">Enviar a revisión</string>
     <string name="detalle_aprobar">Aprobar y publicar</string>
-    <string name="detalle_devolver">Devolver a borrador</string>
-    <string name="detalle_no_encontrada">No se encontró la unidad.</string>
+    <string name="detalle_rechazar">Rechazar</string>
+    <string name="detalle_deshabilitar">Deshabilitar</string>
+    <string name="detalle_preguntas">Editar preguntas de la prueba</string>
+    <string name="detalle_no_existe">La unidad no existe</string>
+
+    <!-- Editor de preguntas -->
+    <string name="preguntas_titulo">Preguntas de la prueba</string>
+    <string name="preg_label_texto">Pregunta</string>
+    <string name="preg_label_opcion">Alternativa %1$s</string>
+    <string name="preg_correcta">Marcar alternativa %1$s como correcta</string>
+    <string name="preg_agregar">Agregar pregunta</string>
+    <string name="preg_lista">Preguntas guardadas (%1$d)</string>
+    <string name="preg_vacio">Aún no hay preguntas.</string>
+    <string name="preg_eliminar">Eliminar pregunta</string>
+
+    <!-- Evaluaciones del estudiante -->
+    <string name="est_titulo">Mis evaluaciones</string>
+    <string name="est_vacio">Todavía no hay evaluaciones disponibles.</string>
+    <string name="est_sin_intentos">Aún no la has rendido</string>
+    <string name="est_ultimo">Último resultado: %1$d%%</string>
+    <string name="eval_titulo">Evaluación</string>
+    <string name="eval_progreso">Pregunta %1$d de %2$d</string>
+    <string name="eval_acierto">¡Muy bien!</string>
+    <string name="eval_error">Casi. La respuesta correcta está en verde.</string>
+    <string name="eval_siguiente">Siguiente</string>
+    <string name="eval_terminar">Ver resultado</string>
+    <string name="eval_bloqueada">Ya usaste tus %1$d intentos. Habla con tu profesora o profesor.</string>
+    <string name="eval_sin_preguntas">Esta unidad todavía no tiene preguntas.</string>
+    <string name="eval_resultado">Obtuviste %1$d de %2$d</string>
+    <string name="eval_restantes">Te quedan %1$d intentos</string>
+    <string name="eval_volver_lista">Volver a mis evaluaciones</string>
+    <string name="eval_correcta_desc">Respuesta correcta</string>
+    <string name="eval_incorrecta_desc">Respuesta incorrecta</string>
+
+    <!-- Fase 5: contenido, imagen y asignación -->
+    <string name="detalle_imagen">Elegir imagen de apoyo</string>
+    <string name="detalle_asignar">Asignar a un curso</string>
+    <string name="imagen_desc">Imagen de apoyo de %1$s</string>
+    <string name="contenido_titulo">Aprende</string>
+    <string name="contenido_rendir">Rendir la prueba</string>
+    <string name="asignar_titulo">Asignar unidad</string>
+    <string name="asignar_curso">Curso</string>
+    <string name="asignar_desde">Disponible desde</string>
+    <string name="asignar_hasta">Disponible hasta</string>
+    <string name="asignar_intentos">Intentos máximos</string>
+    <string name="asignar_activa">Disponible para estudiantes</string>
+    <string name="asignar_confirmo">Confirmo que revisé el contenido y la prueba</string>
+    <string name="asignar_guardar">Guardar asignación</string>
+    <string name="asignar_guardada">Asignación guardada</string>
+    <string name="asignar_vigentes">Asignaciones de esta unidad</string>
+    <string name="asignar_ninguna">Aún no está asignada a ningún curso.</string>
+    <string name="asignar_estado_activa">Activa</string>
+    <string name="asignar_estado_pausada">Pausada</string>
+    <string name="asignar_elegir_fecha">Elegir fecha</string>
+    <string name="asignar_aceptar">Aceptar</string>
+    <string name="asignar_cancelar">Cancelar</string>
+    <string name="panel_informes">Informes de estudiantes</string>
+    <string name="informes_titulo">Informes</string>
+    <string name="informes_vacio">No hay estudiantes registrados.</string>
+    <string name="informe_titulo">Informe del estudiante</string>
+    <string name="informe_general">Progreso general: %1$d %%</string>
+    <string name="informe_aviso_umbrales">Niveles según umbrales provisorios (80 % y 60 %). Es una guía: la decisión es del docente.</string>
+    <string name="informe_sin_evaluar">Sin evaluaciones</string>
+    <string name="informe_detalle">Detalle por pregunta</string>
+    <string name="informe_sin_evaluaciones">Aún no hay pruebas rendidas.</string>
+    <string name="informe_acierto">Correcta</string>
+    <string name="informe_error">Incorrecta</string>
+    <string name="informe_respondio">Respondió: %1$s</string>
+    <string name="informe_correcta">Correcta: %1$s</string>
+    <string name="observacion_etiqueta">Observación docente</string>
+    <string name="observacion_guardar">Guardar observación</string>
+    <string name="reinicio_progreso">Reiniciar progreso</string>
+    <string name="reinicio_intentos">Reiniciar intentos</string>
+    <string name="reinicio_progreso_todo">Reiniciar progreso general</string>
+    <string name="reinicio_intentos_todo">Reiniciar todos los intentos</string>
+    <string name="reinicio_todo">todas las asignaturas</string>
+    <string name="reinicio_confirmar_titulo">¿Confirmas el reinicio?</string>
+    <string name="reinicio_confirmar_texto">Se reiniciará: %1$s (%2$s). Esta acción no se puede deshacer.</string>
+    <string name="reinicio_si">Sí, reiniciar</string>
+    <string name="notif_canal">Avisos de informes</string>
+    <string name="notif_titulo">MPAZ PRO 2.º</string>
+    <string name="notif_activar">Activar avisos</string>
+    <string name="cargando">Cargando…</string>
 </resources>

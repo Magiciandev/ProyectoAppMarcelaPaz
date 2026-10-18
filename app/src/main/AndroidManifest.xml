@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos: se declaran aquí cuando se integren los recursos nativos (Fase 5 y 6). -->
+    <!-- Recurso nativo 2: notificaciones locales. Se pide en ejecución solo desde Android 13. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"

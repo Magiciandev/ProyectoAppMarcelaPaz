@@ -2,8 +2,10 @@ package com.example.mpazpro.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
+import com.example.mpazpro.data.model.EstadoUnidad
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -11,12 +13,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.mpazpro.data.model.Asignaturas
-import com.example.mpazpro.data.model.EstadoUnidad
 import com.example.mpazpro.ui.theme.MpazProTheme
 
 // Tarjeta de una unidad. Recibe textos simples, no la entidad de Room, para ser reutilizable.
@@ -25,14 +25,14 @@ fun UnidadCard(
     titulo: String,
     detalle: String,
     asignatura: String,
-    estado: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    estado: String? = null,
+    onClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
@@ -49,12 +49,9 @@ fun UnidadCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 AsignaturaChip(nombre = asignatura, colorTiza = colorTizaDe(asignatura))
-                EstadoChip(estado = estado)
+                if (estado != null) EstadoChip(estado = estado)
             }
         }
     }
@@ -68,8 +65,7 @@ private fun UnidadCardPreview() {
             titulo = "Suma y resta",
             detalle = "OA05",
             asignatura = Asignaturas.MATEMATICA,
-            estado = EstadoUnidad.EN_REVISION,
-            onClick = {}
+            estado = EstadoUnidad.BORRADOR
         )
     }
 }

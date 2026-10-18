@@ -4,15 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import com.example.mpazpro.data.local.AppDatabase
-import com.example.mpazpro.data.local.SembradorDatos
+import com.example.mpazpro.data.local.AlmacenImagenes
+import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.EvaluacionRepository
+import com.example.mpazpro.data.repository.InformeRepository
+import com.example.mpazpro.ui.components.Notificaciones
+import com.example.mpazpro.data.repository.SemillaDatos
 import com.example.mpazpro.data.repository.UnidadRepository
 import com.example.mpazpro.data.repository.UsuarioRepository
 import com.example.mpazpro.ui.navigation.AppNavHost
 import com.example.mpazpro.ui.theme.MpazProTheme
 import com.example.mpazpro.viewmodel.MpazViewModelFactory
-import kotlinx.coroutines.launch
 
 // Actividad única: toda la navegación vive en Compose (AppNavHost).
 class MainActivity : ComponentActivity() {
@@ -20,20 +27,37 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Aquí se arma la cadena de dependencias: base de datos -> repositorios -> fábrica de ViewModels.
+        // Aquí se arma la cadena de dependencias: base de datos -> repositorio -> fábrica de ViewModels.
         val baseDeDatos = AppDatabase.obtener(applicationContext)
+        val semilla = SemillaDatos(
+            baseDeDatos.usuarioDao(), baseDeDatos.unidadDao(),
+            baseDeDatos.historialDao(), baseDeDatos.preguntaDao(), baseDeDatos.asignacionDao()
+        )
         val fabrica = MpazViewModelFactory(
-            unidadRepository = UnidadRepository(baseDeDatos.unidadDao()),
-            usuarioRepository = UsuarioRepository(baseDeDatos.usuarioDao())
+            unidadRepository = UnidadRepository(
+                baseDeDatos.unidadDao(), baseDeDatos.historialDao(), AlmacenImagenes(applicationContext)
+            ),
+            usuarioRepository = UsuarioRepository(baseDeDatos.usuarioDao(), semilla),
+            evaluacionRepository = EvaluacionRepository(baseDeDatos.preguntaDao(), baseDeDatos.evaluacionDao()),
+            asignacionRepository = AsignacionRepository(baseDeDatos.asignacionDao()),
+            informeRepository = InformeRepository(
+                baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
+            )
         )
 
-        // Primera vez: carga los usuarios y unidades ficticios (si ya existen, no hace nada).
-        val sembrador = SembradorDatos(baseDeDatos.usuarioDao(), baseDeDatos.unidadDao())
-        lifecycleScope.launch { sembrador.sembrarSiVacio() }
+        Notificaciones.crearCanal(applicationContext)
 
         setContent {
             MpazProTheme {
-                AppNavHost(factory = fabrica)
+                // Fondo base de toda la app: aporta el color de fondo del tema y el color de texto
+                // «onBackground». Sin esto se veía el verde de la ventana y el texto salía negro.
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                    contentColor = MaterialTheme.colorScheme.onBackground
+                ) {
+                    AppNavHost(factory = fabrica)
+                }
             }
         }
     }

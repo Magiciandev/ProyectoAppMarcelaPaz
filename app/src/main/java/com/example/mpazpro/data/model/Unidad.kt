@@ -11,5 +11,6 @@ data class Unidad(
     val objetivoAprendizaje: String,
     val asignatura: String,
     val estado: String = EstadoUnidad.BORRADOR,
-    val contenido: String
+    val contenido: String,
+    val imagenRuta: String? = null
 )

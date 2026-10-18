@@ -2,7 +2,6 @@ package com.example.mpazpro.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mpazpro.data.model.Usuario
 import com.example.mpazpro.data.repository.UsuarioRepository
 import com.example.mpazpro.viewmodel.validation.ValidadorLogin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,28 +10,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class LoginFormulario(
-    val usuario: String = "",
-    val pin: String = ""
-)
+data class LoginFormulario(val usuario: String = "", val pin: String = "")
 
-data class LoginErrores(
-    val usuario: String? = null,
-    val pin: String? = null
-) {
-    fun hayErrores(): Boolean = usuario != null || pin != null
+data class LoginErrores(val usuario: String? = null, val pin: String? = null) {
+    fun hayErrores() = usuario != null || pin != null
 }
 
 sealed interface LoginUiState {
     object Idle : LoginUiState
     object Loading : LoginUiState
-    data class Success(val usuario: Usuario) : LoginUiState
+    data class Success(val usuarioId: Long) : LoginUiState
     data class Error(val mensaje: String) : LoginUiState
 }
 
-class LoginViewModel(
-    private val repository: UsuarioRepository
-) : ViewModel() {
+class LoginViewModel(private val repository: UsuarioRepository) : ViewModel() {
 
     private val _formulario = MutableStateFlow(LoginFormulario())
     val formulario: StateFlow<LoginFormulario> = _formulario.asStateFlow()
@@ -43,24 +34,21 @@ class LoginViewModel(
     private val _estado = MutableStateFlow<LoginUiState>(LoginUiState.Idle)
     val estado: StateFlow<LoginUiState> = _estado.asStateFlow()
 
-    private var intentoEnviar = false
+    private var intentoIngresar = false
 
     fun actualizarUsuario(valor: String) {
         _formulario.update { it.copy(usuario = valor) }
-        if (intentoEnviar) _errores.update { it.copy(usuario = ValidadorLogin.validarUsuario(valor)) }
-        limpiarErrorDeAcceso()
+        if (intentoIngresar) _errores.update { it.copy(usuario = ValidadorLogin.validarUsuario(valor)) }
     }
 
     fun actualizarPin(valor: String) {
         _formulario.update { it.copy(pin = valor) }
-        if (intentoEnviar) _errores.update { it.copy(pin = ValidadorLogin.validarPin(valor)) }
-        limpiarErrorDeAcceso()
+        if (intentoIngresar) _errores.update { it.copy(pin = ValidadorLogin.validarPin(valor)) }
     }
 
-    fun iniciarSesion() {
+    fun ingresar() {
         if (_estado.value is LoginUiState.Loading) return
-        intentoEnviar = true
-
+        intentoIngresar = true
         val actual = _formulario.value
         val errores = LoginErrores(
             usuario = ValidadorLogin.validarUsuario(actual.usuario),
@@ -71,23 +59,17 @@ class LoginViewModel(
 
         viewModelScope.launch {
             _estado.value = LoginUiState.Loading
-            repository.autenticar(actual.usuario, actual.pin)
-                .onSuccess { usuario -> _estado.value = LoginUiState.Success(usuario) }
-                .onFailure { error ->
-                    _estado.value = LoginUiState.Error(error.localizedMessage ?: "No se pudo iniciar sesión")
-                }
+            repository.autenticar(actual.usuario.trim().lowercase(), actual.pin)
+                .onSuccess { _estado.value = LoginUiState.Success(it.id) }
+                .onFailure { _estado.value = LoginUiState.Error(it.localizedMessage ?: "No se pudo ingresar") }
         }
     }
 
-    // Se llama al terminar el ingreso: borra el PIN de la memoria y deja el formulario limpio.
+    // Se llama al salir de la pantalla para que el login quede limpio.
     fun reiniciar() {
         _formulario.value = LoginFormulario()
         _errores.value = LoginErrores()
         _estado.value = LoginUiState.Idle
-        intentoEnviar = false
-    }
-
-    private fun limpiarErrorDeAcceso() {
-        if (_estado.value is LoginUiState.Error) _estado.value = LoginUiState.Idle
+        intentoIngresar = false
     }
 }

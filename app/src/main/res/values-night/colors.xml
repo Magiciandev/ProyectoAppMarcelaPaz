@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Modo oscuro: la ventana usa el mismo fondo que el tema de Compose (OscuroFondo). -->
+    <color name="pizarra">#FF0F1815</color>
+</resources>

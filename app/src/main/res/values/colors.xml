@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Color de la ventana antes de que Compose dibuje la primera pantalla (evita un destello blanco). -->
+    <!-- Color de la ventana antes de que Compose dibuje la primera pantalla (evita un destello blanco).
+         La primera pantalla es la bienvenida, que es verde pizarra. En modo oscuro: values-night. -->
     <color name="pizarra">#FF1F4A3D</color>
 </resources>

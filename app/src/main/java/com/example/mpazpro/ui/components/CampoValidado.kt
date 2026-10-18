@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.mpazpro.R
@@ -32,7 +31,7 @@ fun CampoValidado(
     maxCaracteres: Int? = null,
     minLineas: Int = 1,
     teclado: KeyboardOptions = KeyboardOptions.Default,
-    ocultarTexto: Boolean = false
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     OutlinedTextField(
         value = valor,
@@ -55,7 +54,7 @@ fun CampoValidado(
         singleLine = minLineas == 1,
         minLines = minLineas,
         keyboardOptions = teclado,
-        visualTransformation = if (ocultarTexto) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = visualTransformation,
         modifier = modifier.fillMaxWidth()
     )
 }

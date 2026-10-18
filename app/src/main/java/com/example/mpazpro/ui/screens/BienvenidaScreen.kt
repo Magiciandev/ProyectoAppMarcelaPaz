@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,10 +57,11 @@ fun BienvenidaScreen(
 ) {
     IconosBarraEstado(iconosClaros = true)
 
-    var pasoVisible by remember { mutableIntStateOf(if (animar) 0 else TOTAL_PASOS) }
+    // rememberSaveable: al girar la pantalla la animación no se repite.
+    var pasoVisible by rememberSaveable { mutableIntStateOf(if (animar) 0 else TOTAL_PASOS) }
 
     LaunchedEffect(Unit) {
-        if (animar) {
+        if (animar && pasoVisible < TOTAL_PASOS) {
             delay(300)
             repeat(TOTAL_PASOS) {
                 pasoVisible++
@@ -75,6 +79,7 @@ fun BienvenidaScreen(
         contentAlignment = Alignment.Center
     ) {
         Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
