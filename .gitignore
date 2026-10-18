@@ -1,0 +1,19 @@
+# Gradle y compilación
+*.iml
+.gradle
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+.kotlin/
+
+# Configuración local (cada integrante tiene la suya)
+local.properties
+/.idea/
+.DS_Store
+
+# Firmas y secretos: nunca se suben al repositorio
+*.jks
+*.keystore
+keystore.properties
