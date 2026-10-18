@@ -4,12 +4,19 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.mpazpro.data.model.HistorialUnidad
 import com.example.mpazpro.data.model.Unidad
+import com.example.mpazpro.data.model.Usuario
 
-@Database(entities = [Unidad::class], version = 1, exportSchema = false)
+@Database(
+    entities = [Unidad::class, HistorialUnidad::class, Usuario::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun unidadDao(): UnidadDao
+    abstract fun usuarioDao(): UsuarioDao
 
     companion object {
         @Volatile

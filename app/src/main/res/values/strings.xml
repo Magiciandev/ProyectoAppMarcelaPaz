@@ -16,6 +16,7 @@
     <!-- General -->
     <string name="volver">Volver</string>
     <string name="campo_con_error">Campo con error</string>
+    <string name="cerrar_sesion">Cerrar sesión</string>
 
     <!-- Lista de unidades -->
     <string name="unidades_titulo">Unidades</string>
@@ -30,4 +31,29 @@
     <string name="form_label_contenido">Contenido de estudio</string>
     <string name="form_guardar">Guardar unidad</string>
     <string name="form_guardando">Guardando…</string>
+
+    <!-- Ingreso -->
+    <string name="login_titulo">Iniciar sesión</string>
+    <string name="login_label_usuario">Usuario</string>
+    <string name="login_label_pin">PIN de 4 dígitos</string>
+    <string name="login_ingresar">Ingresar</string>
+    <string name="login_ingresando">Ingresando…</string>
+    <string name="login_pista">Usuarios de prueba: utp, docente, est001 a est006. PIN: 1234</string>
+
+    <!-- Paneles por rol -->
+    <string name="panel_saludo">Hola, %1$s</string>
+    <string name="panel_curso">Curso: %1$s</string>
+    <string name="panel_docente_titulo">Panel del docente</string>
+    <string name="panel_docente_desc">Aquí estará la asignación de unidades, las fechas, los intentos y los informes.</string>
+    <string name="panel_estudiante_titulo">Panel del estudiante</string>
+    <string name="panel_estudiante_desc">Aquí estarán tus asignaturas, el contenido de estudio y las evaluaciones.</string>
+
+    <!-- Detalle de unidad -->
+    <string name="detalle_titulo">Detalle de la unidad</string>
+    <string name="detalle_contenido">Contenido de estudio</string>
+    <string name="detalle_historial">Historial</string>
+    <string name="detalle_enviar">Enviar a revisión</string>
+    <string name="detalle_aprobar">Aprobar y publicar</string>
+    <string name="detalle_devolver">Devolver a borrador</string>
+    <string name="detalle_no_encontrada">No se encontró la unidad.</string>
 </resources>

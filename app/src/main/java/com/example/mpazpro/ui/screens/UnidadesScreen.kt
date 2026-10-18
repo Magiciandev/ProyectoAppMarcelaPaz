@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,15 +39,21 @@ import com.example.mpazpro.ui.theme.MpazProTheme
 import com.example.mpazpro.viewmodel.UnidadesUiState
 import com.example.mpazpro.viewmodel.UnidadesViewModel
 
-// Pantalla con estado: observa el ViewModel y delega el dibujo en UnidadesContenido.
+// Panel de la Jefatura UTP: lista de unidades con su estado. Pantalla con estado.
 @Composable
 fun UnidadesScreen(
     viewModel: UnidadesViewModel,
     onNuevaUnidad: () -> Unit,
-    onVolver: () -> Unit
+    onAbrirUnidad: (Long) -> Unit,
+    onCerrarSesion: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    UnidadesContenido(uiState = uiState, onNuevaUnidad = onNuevaUnidad, onVolver = onVolver)
+    UnidadesContenido(
+        uiState = uiState,
+        onNuevaUnidad = onNuevaUnidad,
+        onAbrirUnidad = onAbrirUnidad,
+        onCerrarSesion = onCerrarSesion
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +61,8 @@ fun UnidadesScreen(
 fun UnidadesContenido(
     uiState: UnidadesUiState,
     onNuevaUnidad: () -> Unit,
-    onVolver: () -> Unit
+    onAbrirUnidad: (Long) -> Unit,
+    onCerrarSesion: () -> Unit
 ) {
     IconosBarraEstado(iconosClaros = isSystemInDarkTheme())
 
@@ -63,11 +70,11 @@ fun UnidadesContenido(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.unidades_titulo)) },
-                navigationIcon = {
-                    IconButton(onClick = onVolver) {
+                actions = {
+                    IconButton(onClick = onCerrarSesion) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.volver)
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            contentDescription = stringResource(R.string.cerrar_sesion)
                         )
                     }
                 }
@@ -114,8 +121,10 @@ fun UnidadesContenido(
                             items(items = uiState.unidades, key = { it.id }) { unidad ->
                                 UnidadCard(
                                     titulo = unidad.titulo,
-                                    detalle = "${unidad.objetivoAprendizaje} · ${unidad.estado}",
-                                    asignatura = unidad.asignatura
+                                    detalle = unidad.objetivoAprendizaje,
+                                    asignatura = unidad.asignatura,
+                                    estado = unidad.estado,
+                                    onClick = { onAbrirUnidad(unidad.id) }
                                 )
                             }
                         }
@@ -135,18 +144,19 @@ private fun UnidadesConDatosPreview() {
                 listOf(
                     Unidad(
                         id = 2, titulo = "Los sentidos", objetivoAprendizaje = "OA04",
-                        asignatura = Asignaturas.CIENCIAS, estado = EstadoUnidad.BORRADOR,
+                        asignatura = Asignaturas.CIENCIAS, estado = EstadoUnidad.EN_REVISION,
                         contenido = "Exploraremos los cinco sentidos."
                     ),
                     Unidad(
                         id = 1, titulo = "Suma y resta", objetivoAprendizaje = "OA05",
-                        asignatura = Asignaturas.MATEMATICA, estado = EstadoUnidad.BORRADOR,
+                        asignatura = Asignaturas.MATEMATICA, estado = EstadoUnidad.PUBLICADO,
                         contenido = "Sumar es juntar cantidades."
                     )
                 )
             ),
             onNuevaUnidad = {},
-            onVolver = {}
+            onAbrirUnidad = {},
+            onCerrarSesion = {}
         )
     }
 }
@@ -158,7 +168,8 @@ private fun UnidadesVaciasPreview() {
         UnidadesContenido(
             uiState = UnidadesUiState.Listo(emptyList()),
             onNuevaUnidad = {},
-            onVolver = {}
+            onAbrirUnidad = {},
+            onCerrarSesion = {}
         )
     }
 }
