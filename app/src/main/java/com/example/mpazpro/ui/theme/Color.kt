@@ -12,6 +12,7 @@ val TizaLenguaje = Color(0xFFFF8A7A)
 val TizaMatematica = Color(0xFFFFD25E)
 val TizaCiencias = Color(0xFF9BE3B5)
 val TizaHistoria = Color(0xFF7CC8F5)
+val TizaIngles = Color(0xFFFF5722)
 
 // Texto sobre cualquier tiza: verde casi negro, contraste >= 6,7:1 con las 4 tizas (AA exige 4,5:1).
 val TextoSobreTiza = Color(0xFF0B2A21)

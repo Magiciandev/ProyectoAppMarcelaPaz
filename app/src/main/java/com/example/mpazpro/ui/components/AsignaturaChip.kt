@@ -20,6 +20,7 @@ import com.example.mpazpro.ui.theme.TextoSobreTiza
 import com.example.mpazpro.ui.theme.TizaBlanca
 import com.example.mpazpro.ui.theme.TizaCiencias
 import com.example.mpazpro.ui.theme.TizaHistoria
+import com.example.mpazpro.ui.theme.TizaIngles
 import com.example.mpazpro.ui.theme.TizaLenguaje
 import com.example.mpazpro.ui.theme.TizaMatematica
 
@@ -53,6 +54,7 @@ fun colorTizaDe(asignatura: String): Color = when (asignatura) {
     Asignaturas.MATEMATICA -> TizaMatematica
     Asignaturas.CIENCIAS -> TizaCiencias
     Asignaturas.HISTORIA -> TizaHistoria
+    Asignaturas.INGLES -> TizaIngles
     else -> TizaBlanca
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.example.mpazpro.data.local.AppDatabase
 import com.example.mpazpro.data.local.AlmacenImagenes
 import com.example.mpazpro.data.repository.AsignacionRepository
@@ -20,6 +21,8 @@ import com.example.mpazpro.data.repository.UsuarioRepository
 import com.example.mpazpro.ui.navigation.AppNavHost
 import com.example.mpazpro.ui.theme.MpazProTheme
 import com.example.mpazpro.viewmodel.MpazViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // Actividad única: toda la navegación vive en Compose (AppNavHost).
 class MainActivity : ComponentActivity() {
@@ -33,6 +36,10 @@ class MainActivity : ComponentActivity() {
             baseDeDatos.usuarioDao(), baseDeDatos.unidadDao(),
             baseDeDatos.historialDao(), baseDeDatos.preguntaDao(), baseDeDatos.asignacionDao()
         )
+        lifecycleScope.launch(Dispatchers.IO) {
+            semilla.asegurar()
+        }
+
         val fabrica = MpazViewModelFactory(
             unidadRepository = UnidadRepository(
                 baseDeDatos.unidadDao(), baseDeDatos.historialDao(), AlmacenImagenes(applicationContext)

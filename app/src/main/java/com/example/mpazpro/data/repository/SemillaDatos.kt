@@ -15,8 +15,10 @@ import com.example.mpazpro.data.model.Roles
 import com.example.mpazpro.data.model.Unidad
 import com.example.mpazpro.data.model.Usuario
 import com.example.mpazpro.data.security.Cifrado
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 // Datos 100 % ficticios que se cargan la primera vez que la base está vacía.
 class SemillaDatos(
@@ -31,23 +33,29 @@ class SemillaDatos(
     private val mutex = Mutex()
 
     suspend fun asegurar() = mutex.withLock {
-        if (usuarioDao.contar() == 0) sembrarUsuarios()
-        if (unidadDao.contar() == 0) sembrarUnidades()
+        withContext(Dispatchers.IO) {
+            sembrarUsuarios()
+            if (unidadDao.contar() == 0) sembrarUnidades()
+        }
     }
 
     private suspend fun sembrarUsuarios() {
         fun u(nombre: String, usuario: String, rol: String, curso: String? = null) =
             Usuario(nombre = nombre, usuario = usuario, pinHash = Cifrado.crear("1234"), rol = rol, curso = curso)
-        listOf(
+        
+        val usuarios = listOf(
             u("Jefatura UTP", "utp", Roles.UTP),
             u("Docente de prueba", "docente", Roles.DOCENTE),
             u("Ana", "ana", Roles.ESTUDIANTE, "2° A"),
             u("Beto", "beto", Roles.ESTUDIANTE, "2° A"),
             u("Carla", "carla", Roles.ESTUDIANTE, "2° A"),
+            u("Ronald Villalobos", "villalobos", Roles.ESTUDIANTE, "2° A"),
             u("Diego", "diego", Roles.ESTUDIANTE, "2° B"),
             u("Eva", "eva", Roles.ESTUDIANTE, "2° B"),
+            u("Juan Abarzua", "abarzua", Roles.ESTUDIANTE, "2° B"),
             u("Felipe", "felipe", Roles.ESTUDIANTE, "2° B")
-        ).forEach { usuarioDao.insertar(it) }
+        )
+        usuarioDao.insertarTodos(usuarios)
     }
 
     private suspend fun sembrarUnidades() {
