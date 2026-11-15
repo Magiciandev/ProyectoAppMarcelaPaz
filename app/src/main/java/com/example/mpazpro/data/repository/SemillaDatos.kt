@@ -49,10 +49,10 @@ class SemillaDatos(
             u("Ana", "ana", Roles.ESTUDIANTE, "2° A"),
             u("Beto", "beto", Roles.ESTUDIANTE, "2° A"),
             u("Carla", "carla", Roles.ESTUDIANTE, "2° A"),
-            u("Ronald Villalobos", "villalobos", Roles.ESTUDIANTE, "2° A"),
+            u("Gael", "gael", Roles.ESTUDIANTE, "2° A"),
             u("Diego", "diego", Roles.ESTUDIANTE, "2° B"),
             u("Eva", "eva", Roles.ESTUDIANTE, "2° B"),
-            u("Juan Abarzua", "abarzua", Roles.ESTUDIANTE, "2° B"),
+            u("Isidora", "isidora", Roles.ESTUDIANTE, "2° B"),
             u("Felipe", "felipe", Roles.ESTUDIANTE, "2° B")
         )
         usuarioDao.insertarTodos(usuarios)

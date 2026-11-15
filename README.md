@@ -68,7 +68,7 @@ app/src/main/java/com/example/mpazpro/
 Requisitos: `minSdk` 29, `targetSdk`/`compileSdk` 36, AGP 8.12.3, Kotlin 2.0.21, Room 2.6.1, Compose BOM 2024.09.00.
 
 ### Usuarios de prueba (ficticios)
-`utp`, `docente`, `ana`, `beto`, `carla` (2° A), `diego`, `eva`, `felipe` (2° B). PIN de todos: `1234`.
+`utp`, `docente`, `ana`, `beto`, `carla`, `gael` (2° A), `diego`, `eva`, `isidora`, `felipe` (2° B). PIN de todos: `1234`.
 El PIN se guarda cifrado, nunca en claro. Si la base ya existía con datos viejos, desinstalar la app para recrearla.
 
 ### Recorrido sugerido

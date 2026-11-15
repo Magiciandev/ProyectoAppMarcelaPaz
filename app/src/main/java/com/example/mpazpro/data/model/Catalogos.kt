@@ -6,9 +6,8 @@ object Asignaturas {
     const val MATEMATICA = "Matemática"
     const val CIENCIAS = "Ciencias Naturales"
     const val HISTORIA = "Historia"
-    const val INGLES  = "Ingles"
 
-    val todas = listOf(LENGUAJE, MATEMATICA, CIENCIAS, HISTORIA, INGLES)
+    val todas = listOf(LENGUAJE, MATEMATICA, CIENCIAS, HISTORIA)
 }
 
 object EstadoUnidad {
