@@ -11,7 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.example.mpazpro.data.local.AppDatabase
 import com.example.mpazpro.data.local.AlmacenImagenes
+import com.example.mpazpro.data.remote.AlmacenSharedPreferences
+import com.example.mpazpro.data.remote.ApiConfig
+import com.example.mpazpro.data.remote.AutenticacionRemota
+import com.example.mpazpro.data.remote.ClienteApi
+import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.ui.components.Notificaciones
@@ -40,16 +46,24 @@ class MainActivity : ComponentActivity() {
             semilla.asegurar()
         }
 
+        // Conexión con el backend: un solo cliente (el gateway) y la sesión (token) guardada en el teléfono.
+        val sesion = SesionStore(AlmacenSharedPreferences(applicationContext))
+        val cliente = ClienteApi(ApiConfig.baseUrl, sesion)
+
         val fabrica = MpazViewModelFactory(
             unidadRepository = UnidadRepository(
                 baseDeDatos.unidadDao(), baseDeDatos.historialDao(), AlmacenImagenes(applicationContext)
             ),
-            usuarioRepository = UsuarioRepository(baseDeDatos.usuarioDao(), semilla),
+            usuarioRepository = UsuarioRepository(
+                baseDeDatos.usuarioDao(), semilla, AutenticacionRemota(cliente.auth, sesion)
+            ),
             evaluacionRepository = EvaluacionRepository(baseDeDatos.preguntaDao(), baseDeDatos.evaluacionDao()),
             asignacionRepository = AsignacionRepository(baseDeDatos.asignacionDao()),
             informeRepository = InformeRepository(
                 baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
-            )
+            ),
+            catalogoRepository = CatalogoRepository(cliente.contenidos, baseDeDatos.catalogoCacheDao()),
+            sesionStore = sesion
         )
 
         Notificaciones.crearCanal(applicationContext)

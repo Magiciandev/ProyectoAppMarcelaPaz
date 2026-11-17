@@ -5,6 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.mpazpro.data.model.Asignacion
+import com.example.mpazpro.data.model.CacheAsignatura
+import com.example.mpazpro.data.model.CacheContenido
+import com.example.mpazpro.data.model.CacheObjetivo
+import com.example.mpazpro.data.model.CacheUnidad
 import com.example.mpazpro.data.model.Configuracion
 import com.example.mpazpro.data.model.HistorialUnidad
 import com.example.mpazpro.data.model.Intento
@@ -18,9 +22,11 @@ import com.example.mpazpro.data.model.Usuario
     entities = [
         Unidad::class, Usuario::class, HistorialUnidad::class,
         Pregunta::class, Resultado::class, Intento::class,
-        Asignacion::class, Configuracion::class, Observacion::class
+        Asignacion::class, Configuracion::class, Observacion::class,
+        // v5: caché del catálogo que entrega el backend
+        CacheAsignatura::class, CacheUnidad::class, CacheObjetivo::class, CacheContenido::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun evaluacionDao(): EvaluacionDao
     abstract fun asignacionDao(): AsignacionDao
     abstract fun informeDao(): InformeDao
+    abstract fun catalogoCacheDao(): CatalogoCacheDao
 
     companion object {
         @Volatile

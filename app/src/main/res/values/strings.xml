@@ -136,4 +136,17 @@
     <string name="notif_titulo">MPAZ PRO 2.º</string>
     <string name="notif_activar">Activar avisos</string>
     <string name="cargando">Cargando…</string>
+
+    <!-- Catálogo del servidor (fase 5) -->
+    <string name="panel_catalogo">Catálogo del servidor</string>
+    <string name="catalogo_titulo">Catálogo del servidor</string>
+    <string name="catalogo_actualizar">Actualizar desde el servidor</string>
+    <string name="catalogo_sesion">Sesión con el servidor: %1$s</string>
+    <string name="catalogo_sin_sesion">Sin sesión con el servidor: se muestra lo guardado en el teléfono.</string>
+    <string name="catalogo_vacio">Todavía no hay nada guardado. Actualiza para descargar el catálogo.</string>
+    <string name="catalogo_sin_unidades">Sin unidades para tu perfil.</string>
+    <plurals name="catalogo_contenidos">
+        <item quantity="one">%1$d contenido</item>
+        <item quantity="other">%1$d contenidos</item>
+    </plurals>
 </resources>

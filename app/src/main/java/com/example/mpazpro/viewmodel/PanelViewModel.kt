@@ -18,7 +18,7 @@ sealed interface PanelUiState {
 
 class PanelViewModel(
     savedStateHandle: SavedStateHandle,
-    repository: UsuarioRepository
+    private val repository: UsuarioRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PanelUiState>(PanelUiState.Cargando)
@@ -32,4 +32,7 @@ class PanelViewModel(
                 .onFailure { _uiState.value = PanelUiState.Error(it.localizedMessage ?: "No se pudo cargar el perfil") }
         }
     }
+
+    /** Olvida el token del servidor al cerrar sesión. */
+    fun cerrarSesion() = repository.cerrarSesion()
 }

@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Conexión con el backend (API REST). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Recurso nativo 2: notificaciones locales. Se pide en ejecución solo desde Android 13. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

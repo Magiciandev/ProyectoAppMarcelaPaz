@@ -22,6 +22,7 @@ import com.example.mpazpro.ui.screens.InformeScreen
 import com.example.mpazpro.ui.screens.InformesListaScreen
 import com.example.mpazpro.ui.screens.EvaluacionScreen
 import com.example.mpazpro.ui.screens.LoginScreen
+import com.example.mpazpro.ui.screens.CatalogoScreen
 import com.example.mpazpro.ui.screens.PanelScreen
 import com.example.mpazpro.ui.screens.PreguntasEditorScreen
 import com.example.mpazpro.ui.screens.UnidadDetalleScreen
@@ -43,6 +44,7 @@ object Rutas {
     const val CONTENIDO = "contenido/{unidadId}/{estudianteId}"
     const val INFORMES = "informes/{docenteId}"
     const val INFORME = "informe/{docenteId}/{estudianteId}"
+    const val CATALOGO = "catalogo"
 
     fun panel(usuarioId: Long) = "panel/$usuarioId"
     fun unidades(editable: Boolean) = "unidades/$editable"
@@ -94,9 +96,16 @@ fun AppNavHost(
                 onUnidades = { navController.navigate(Rutas.unidades(it)) },
                 onEvaluaciones = { navController.navigate(Rutas.estudianteUnidades(it)) },
                 onInformes = { navController.navigate(Rutas.informes(it)) },
+                onCatalogo = { navController.navigate(Rutas.CATALOGO) },
                 onCerrarSesion = {
                     navController.navigate(Rutas.LOGIN) { popUpTo(Rutas.BIENVENIDA) }
                 }
+            )
+        }
+        composable(Rutas.CATALOGO) {
+            CatalogoScreen(
+                viewModel = viewModel(factory = factory),
+                onVolver = { navController.popBackStack() }
             )
         }
         composable(Rutas.UNIDADES, arguments = listOf(argBool("editable"))) { entrada ->

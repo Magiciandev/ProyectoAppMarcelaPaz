@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.mpazpro.data.model.Usuario
 
 @Dao
@@ -14,6 +15,9 @@ interface UsuarioDao {
     // IGNORE: si el usuario ya existe (el nombre de usuario es único), se salta sin dar error.
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertarTodos(usuarios: List<Usuario>)
+
+    @Update
+    suspend fun actualizar(usuario: Usuario)
 
     @Query("SELECT * FROM usuarios WHERE usuario = :usuario LIMIT 1")
     suspend fun buscarPorUsuario(usuario: String): Usuario?

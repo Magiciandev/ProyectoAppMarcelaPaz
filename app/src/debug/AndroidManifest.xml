@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Solo en la variante debug: permite HTTP sin cifrar para hablar con el backend local
+        (http://10.0.2.2:9090/ en el emulador). La variante release NO lo permite: en producción se usa HTTPS.
+    -->
+    <application android:usesCleartextTraffic="true" />
+
+</manifest>

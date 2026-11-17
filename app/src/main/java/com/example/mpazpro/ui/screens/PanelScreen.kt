@@ -37,6 +37,7 @@ fun PanelScreen(
     onUnidades: (editable: Boolean) -> Unit,
     onEvaluaciones: (estudianteId: Long) -> Unit,
     onInformes: (docenteId: Long) -> Unit,
+    onCatalogo: () -> Unit,
     onCerrarSesion: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -66,7 +67,15 @@ fun PanelScreen(
                         }
                         else -> BotonPanel(stringResource(R.string.panel_evaluaciones)) { onEvaluaciones(usuario.id) }
                     }
-                    OutlinedButton(onClick = onCerrarSesion, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                    // Catálogo que entrega el servidor (lo ve cada perfil según su rol).
+                    BotonPanel(stringResource(R.string.panel_catalogo), onCatalogo)
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.cerrarSesion()
+                            onCerrarSesion()
+                        },
+                        modifier = Modifier.fillMaxWidth().height(52.dp)
+                    ) {
                         Text(stringResource(R.string.panel_cerrar))
                     }
                 }

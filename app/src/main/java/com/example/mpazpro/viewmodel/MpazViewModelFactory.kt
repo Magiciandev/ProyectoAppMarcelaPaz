@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.data.repository.UnidadRepository
@@ -18,7 +20,9 @@ class MpazViewModelFactory(
     private val usuarioRepository: UsuarioRepository,
     private val evaluacionRepository: EvaluacionRepository,
     private val asignacionRepository: AsignacionRepository,
-    private val informeRepository: InformeRepository
+    private val informeRepository: InformeRepository,
+    private val catalogoRepository: CatalogoRepository,
+    private val sesionStore: SesionStore
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -49,6 +53,8 @@ class MpazViewModelFactory(
                 InformesListaViewModel(handle, informeRepository) as T
             modelClass.isAssignableFrom(InformeViewModel::class.java) ->
                 InformeViewModel(handle, informeRepository) as T
+            modelClass.isAssignableFrom(CatalogoViewModel::class.java) ->
+                CatalogoViewModel(catalogoRepository, sesionStore) as T
             else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
         }
     }

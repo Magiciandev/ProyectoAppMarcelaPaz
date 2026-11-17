@@ -5,6 +5,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Dirección del backend (el API Gateway). Por defecto sirve para el emulador de Android Studio:
+// 10.0.2.2 es el computador que lo aloja. Para otro caso se cambia sin tocar el código:
+//   ./gradlew assembleDebug -PapiBaseUrl=http://192.168.1.50:9090/
+// o, en un celular conectado por cable, `adb reverse tcp:9090 tcp:9090` y -PapiBaseUrl=http://localhost:9090/
+val apiBaseUrl = (project.findProperty("apiBaseUrl") as String?) ?: "http://10.0.2.2:9090/"
+
 android {
     namespace = "com.example.mpazpro"
     compileSdk = 36
@@ -17,6 +23,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -37,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         // Las pruebas unitarias no cargan Android: sus llamadas devuelven valores por defecto.
@@ -65,6 +74,11 @@ dependencies {
 
     // Coil: muestra la imagen de apoyo elegida con el selector de fotos.
     implementation(libs.coil.compose)
+
+    // Conexión con el backend: Retrofit (llamadas REST), OkHttp (cliente HTTP) y Gson (JSON).
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
