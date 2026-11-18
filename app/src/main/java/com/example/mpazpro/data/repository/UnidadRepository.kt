@@ -7,6 +7,7 @@ import com.example.mpazpro.data.local.UnidadDao
 import com.example.mpazpro.data.model.EstadoUnidad
 import com.example.mpazpro.data.model.HistorialUnidad
 import com.example.mpazpro.data.model.Unidad
+import com.example.mpazpro.data.remote.ResultadoRemoto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -15,7 +16,8 @@ import kotlinx.coroutines.withContext
 class UnidadRepository(
     private val dao: UnidadDao,
     private val historialDao: HistorialDao,
-    private val almacen: AlmacenImagenes
+    private val almacen: AlmacenImagenes,
+    private val servidor: UnidadServidor
 ) {
 
     fun observarUnidades(): Flow<List<Unidad>> = dao.observarTodas()
@@ -39,12 +41,20 @@ class UnidadRepository(
             }
         }
 
+    // Primero se crea en el servidor; solo si lo acepta se guarda la copia local (así lo demás de la app,
+    // que aún lee de Room, sigue funcionando). Sin conexión no se crea: crear sin red llega en la fase 7.
     suspend fun guardar(unidad: Unidad): Result<Long> =
         withContext(Dispatchers.IO) {
-            runCatching {
-                val id = dao.insertar(unidad)
-                registrar(id, "Unidad creada en borrador")
-                id
+            when (val remoto = servidor.crear(unidad)) {
+                is ResultadoRemoto.Ok -> runCatching {
+                    val id = dao.insertar(unidad.copy(objetivoServidorId = remoto.valor))
+                    registrar(id, "Unidad creada en borrador")
+                    id
+                }
+                is ResultadoRemoto.ErrorHttp ->
+                    Result.failure(IllegalStateException("No se pudo crear la unidad: ${remoto.mensaje}"))
+                is ResultadoRemoto.SinConexion ->
+                    Result.failure(IllegalStateException("No se pudo crear la unidad: ${remoto.mensaje}"))
             }
         }
 

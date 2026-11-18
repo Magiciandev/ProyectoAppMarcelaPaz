@@ -53,8 +53,9 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
-Lo demás de la app (unidades, evaluación, asignación e informes) **sigue funcionando con la base local**: se migra en las
-fases 6 y 7.
+Fase 6, paso 1: **crear una unidad** ahora se hace en el servidor (unidad, objetivo y contenido) y solo después se guarda
+la copia local; hace falta conexión y ser UTP. Lo demás de la app (estados, evaluación, asignación e informes)
+**sigue funcionando con la base local**: se migra en los pasos siguientes de la fase 6 y en la fase 7.
 
 ## 5. Pruebas manuales sugeridas
 

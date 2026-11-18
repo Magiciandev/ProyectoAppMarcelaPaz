@@ -23,6 +23,7 @@ import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.ui.components.Notificaciones
 import com.example.mpazpro.data.repository.SemillaDatos
 import com.example.mpazpro.data.repository.UnidadRepository
+import com.example.mpazpro.data.repository.UnidadServidor
 import com.example.mpazpro.data.repository.UsuarioRepository
 import com.example.mpazpro.ui.navigation.AppNavHost
 import com.example.mpazpro.ui.theme.MpazProTheme
@@ -52,7 +53,8 @@ class MainActivity : ComponentActivity() {
 
         val fabrica = MpazViewModelFactory(
             unidadRepository = UnidadRepository(
-                baseDeDatos.unidadDao(), baseDeDatos.historialDao(), AlmacenImagenes(applicationContext)
+                baseDeDatos.unidadDao(), baseDeDatos.historialDao(), AlmacenImagenes(applicationContext),
+                UnidadServidor(cliente.contenidos)
             ),
             usuarioRepository = UsuarioRepository(
                 baseDeDatos.usuarioDao(), semilla, AutenticacionRemota(cliente.auth, sesion)

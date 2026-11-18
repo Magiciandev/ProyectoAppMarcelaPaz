@@ -26,7 +26,8 @@ import com.example.mpazpro.data.model.Usuario
         // v5: caché del catálogo que entrega el backend
         CacheAsignatura::class, CacheUnidad::class, CacheObjetivo::class, CacheContenido::class
     ],
-    version = 5,
+    // v6: Unidad guarda el id de su objetivo en el servidor
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
