@@ -49,7 +49,7 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
 - **Room v5:** nuevas tablas `cache_asignatura`, `cache_unidad`, `cache_objetivo` y `cache_contenido` con el catálogo
   descargado. Al actualizar la app, **la base local se recrea** (política de desarrollo `fallbackToDestructiveMigration`);
   los usuarios de prueba se vuelven a sembrar solos.
-- **Pantalla «Catálogo del servidor»** (botón en el panel de los tres perfiles): muestra lo guardado y lo actualiza desde
+- **Pantalla «Catálogo del servidor»** (botón en el panel de UTP y docente; el estudiante no lo ve): muestra lo guardado y lo actualiza desde
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
