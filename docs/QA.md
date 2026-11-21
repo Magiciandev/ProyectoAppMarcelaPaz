@@ -25,7 +25,7 @@ Probar desde un **clon limpio** (git clone → Android Studio → Run) con el ba
 | 2 | Login vacío | Errores con ícono en usuario y PIN | | |
 | 3 | Login con PIN malo (`utp` / `0000`) | Mensaje con ícono, sin entrar | | |
 | 4 | Login `utp` / `1234` | Panel UTP | | |
-| 5 | Backend apagado e intentar entrar | Mensaje de que no hay conexión; la app no se cierra | | |
+| 5 | Backend apagado e intentar entrar | Con usuario y PIN correctos entra con la copia local (si ya había entrado antes con red); con PIN malo, el mismo error del caso 3. La app no se cierra | | |
 | 6 | Contraste login y panel (claro y modo oscuro) | Todo legible en ambos | | |
 | 7 | Chips de asignatura (4 colores) | Texto oscuro legible sobre cada tiza | | |
 | 8 | Rotar (Panel, Login, Bienvenida, Formulario, Prueba, Informe) | Nada cortado; texto escrito se conserva | | |
