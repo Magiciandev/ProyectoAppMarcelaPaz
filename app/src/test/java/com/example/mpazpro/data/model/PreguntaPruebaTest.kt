@@ -23,6 +23,16 @@ class PreguntaPruebaTest {
         puntaje = 2.0
     )
 
+    // gato–miau y perro–guau; las opciones se muestran mezcladas (índices 0 a 3).
+    private val asociacion = PreguntaPrueba(
+        id = 4, tipo = TipoPreguntaPrueba.ASOCIACION, enunciado = "Une cada animal con lo que dice", explicacion = null,
+        opciones = listOf(
+            OpcionPrueba("gato", false, null, "g"), OpcionPrueba("Dice guau", false, null, "p"),
+            OpcionPrueba("perro", false, null, "p"), OpcionPrueba("Dice miau", false, null, "g")
+        ),
+        puntaje = 2.0
+    )
+
     @Test fun una_seleccion_es_correcta_solo_con_la_opcion_marcada_como_correcta() {
         assertTrue(seleccion.esCorrecta(listOf(0)))
         assertFalse(seleccion.esCorrecta(listOf(1)))
@@ -52,7 +62,28 @@ class PreguntaPruebaTest {
 
     @Test fun los_tipos_que_la_app_no_resuelve_se_reconocen() {
         assertEquals(TipoPreguntaPrueba.COMPLETACION, TipoPreguntaPrueba.desde("COMPLETACION"))
-        assertNull(TipoPreguntaPrueba.desde("ASOCIACION"))
+        assertEquals(TipoPreguntaPrueba.ASOCIACION, TipoPreguntaPrueba.desde("ASOCIACION"))
+        assertNull(TipoPreguntaPrueba.desde("ARRASTRAR"))
+    }
+
+    @Test fun una_asociacion_es_correcta_solo_si_todos_los_pares_son_pareja() {
+        assertTrue(asociacion.esCorrecta(listOf(0, 3, 2, 1))) // gato–miau, perro–guau
+        assertTrue(asociacion.esCorrecta(listOf(3, 0, 1, 2))) // el orden dentro del par y entre pares da igual
+        assertFalse(asociacion.esCorrecta(listOf(0, 1, 2, 3))) // gato–guau, perro–miau
+        assertFalse(asociacion.esCorrecta(listOf(0, 3))) // incompleta
+        assertFalse(asociacion.esCorrecta(listOf(0, 3, 2, 2))) // repite una opción
+        assertFalse(asociacion.esCorrecta(listOf(0, 3, 2, 9))) // opción que no existe
+    }
+
+    @Test fun las_parejas_correctas_se_muestran_como_texto() {
+        assertEquals("gato — Dice miau; Dice guau — perro", asociacion.parejasCorrectas())
+    }
+
+    @Test fun una_asociacion_se_envia_como_pares() {
+        assertEquals(
+            """{"pares":[["gato","Dice miau"],["perro","Dice guau"]]}""",
+            asociacion.respuestaComoTexto(listOf(0, 3, 2, 1))
+        )
     }
 
     @Test fun la_prueba_calcula_su_puntaje_y_los_intentos_que_quedan() {

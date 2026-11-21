@@ -47,8 +47,8 @@ import retrofit2.Response
 class PruebaServidorTest {
 
     // ---- ayudas para armar paquetes como los entrega el servidor
-    private fun opcion(texto: String, orden: Int, correcta: Boolean? = null, posicion: Int? = null) =
-        OpcionDto(texto = texto, esCorrecta = correcta, posicionCorrecta = posicion, orden = orden)
+    private fun opcion(texto: String, orden: Int, correcta: Boolean? = null, posicion: Int? = null, par: String? = null) =
+        OpcionDto(texto = texto, esCorrecta = correcta, posicionCorrecta = posicion, parClave = par, orden = orden)
 
     private fun pregunta(id: Long, tipo: String, opciones: List<OpcionDto>) =
         PreguntaDto(id = id, objetivoId = 1, tipo = tipo, enunciado = "Pregunta $id", explicacion = "Explica $id", opciones = opciones)
@@ -56,7 +56,9 @@ class PruebaServidorTest {
     private val p1 = pregunta(1, "SELECCION", listOf(opcion("saca", 2, false), opcion("casa", 1, true), opcion("cosa", 3, false)))
     private val p2 = pregunta(2, "COMPLETACION", listOf(opcion("duerme", 1, true), opcion("duermen", 2, false)))
     private val p3 = pregunta(3, "SECUENCIA", listOf(opcion("pa", 1, posicion = 2), opcion("so", 2, posicion = 1)))
+    // p4 es una asociación mal armada (sin parClave); p5 está bien armada.
     private val p4 = pregunta(4, "ASOCIACION", listOf(opcion("gato", 1), opcion("Dice miau", 2)))
+    private val p5 = pregunta(5, "ASOCIACION", listOf(opcion("gato", 1, par = "g"), opcion("Dice guau", 2, par = "p"), opcion("perro", 3, par = "p"), opcion("Dice miau", 4, par = "g")))
 
     private fun paquete(preguntas: List<PreguntaDto>, enPrueba: List<PreguntaEnPruebaDto>) = PaqueteEvaluacionDto(
         objetivoId = 1,
@@ -84,7 +86,15 @@ class PruebaServidorTest {
         assertTrue(seleccion.opciones[0].esCorrecta)
     }
 
-    @Test fun una_prueba_con_asociacion_no_se_puede_rendir_todavia() {
+    @Test fun una_asociacion_bien_armada_se_puede_rendir_con_sus_pares() {
+        val r = MapeoPrueba.aPreguntas(paquete(listOf(p1, p5), listOf(PreguntaEnPruebaDto(1, 1, 1.0), PreguntaEnPruebaDto(5, 2, 2.0))))!!
+
+        assertEquals(TipoPreguntaPrueba.ASOCIACION, r[1].tipo)
+        assertEquals(listOf("g", "p", "p", "g"), r[1].opciones.map { it.parClave })
+        assertTrue(r[1].esCorrecta(listOf(0, 3, 1, 2)))
+    }
+
+    @Test fun una_asociacion_con_una_opcion_sin_pareja_no_se_puede_rendir() {
         val r = MapeoPrueba.aPreguntas(paquete(listOf(p1, p4), listOf(PreguntaEnPruebaDto(1, 1, 1.0), PreguntaEnPruebaDto(4, 2, 1.0))))
 
         assertNull(r)
@@ -212,7 +222,7 @@ class PruebaServidorTest {
         assertTrue((r as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.SinAsignacion)
     }
 
-    @Test fun sin_prueba_o_con_asociacion_se_avisa() = runBlocking {
+    @Test fun sin_prueba_o_con_asociacion_mal_armada_se_avisa() = runBlocking {
         val sinPrueba = PaqueteEvaluacionDto(objetivoId = 1, preguntas = listOf(p1), prueba = null)
         val conAsociacion = paquete(listOf(p1, p4), listOf(PreguntaEnPruebaDto(1, 1, 1.0), PreguntaEnPruebaDto(4, 2, 1.0)))
 

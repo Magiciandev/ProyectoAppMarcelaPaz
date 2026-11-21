@@ -18,7 +18,7 @@ class SesionPrueba(val preguntas: List<PreguntaPrueba>) {
     val actual: PreguntaPrueba get() = preguntas[indice]
     val esUltima: Boolean get() = indice == preguntas.size - 1
 
-    /** Alternativa elegida. En selección y completación corrige al tiro; en secuencia va sumando el orden. */
+    /** Alternativa elegida. En selección y completación corrige al tiro; en secuencia va sumando el orden; en asociación, de dos en dos (un par). */
     fun elegir(opcion: Int) {
         if (corregida || terminada || opcion !in actual.opciones.indices) return
         when (actual.tipo) {
@@ -26,21 +26,23 @@ class SesionPrueba(val preguntas: List<PreguntaPrueba>) {
                 seleccion = listOf(opcion)
                 corregida = true
             }
-            TipoPreguntaPrueba.SECUENCIA -> if (opcion !in seleccion) seleccion = seleccion + opcion
+            TipoPreguntaPrueba.SECUENCIA, TipoPreguntaPrueba.ASOCIACION -> if (opcion !in seleccion) seleccion = seleccion + opcion
         }
     }
 
-    /** Secuencia: saca la última opción elegida. */
+    /** Secuencia y asociación: saca la última opción elegida (si había una a medias en un par, la saca). */
     fun deshacer() {
-        if (corregida || terminada || actual.tipo != TipoPreguntaPrueba.SECUENCIA || seleccion.isEmpty()) return
+        if (corregida || terminada || !esDeOrdenarOUnir() || seleccion.isEmpty()) return
         seleccion = seleccion.dropLast(1)
     }
 
-    /** Secuencia: corrige, pero solo cuando ya se ordenaron todas las opciones. */
+    /** Secuencia y asociación: corrige, pero solo cuando ya se usaron todas las opciones (en asociación, todas unidas en pares). */
     fun comprobar() {
-        if (corregida || terminada || actual.tipo != TipoPreguntaPrueba.SECUENCIA) return
+        if (corregida || terminada || !esDeOrdenarOUnir()) return
         if (seleccion.size == actual.opciones.size) corregida = true
     }
+
+    private fun esDeOrdenarOUnir() = actual.tipo == TipoPreguntaPrueba.SECUENCIA || actual.tipo == TipoPreguntaPrueba.ASOCIACION
 
     /** Pasa a la pregunta siguiente. Devuelve true cuando ya no quedan más (la prueba terminó). */
     fun siguiente(): Boolean {

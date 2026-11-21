@@ -38,7 +38,7 @@ import com.example.mpazpro.ui.components.ScaffoldConVolver
 import com.example.mpazpro.viewmodel.PruebaServidorUiState
 import com.example.mpazpro.viewmodel.PruebaServidorViewModel
 
-// Prueba de una unidad que viene del servidor. Resuelve selección, completación y secuencia.
+// Prueba de una unidad que viene del servidor. Resuelve selección, completación, secuencia y asociación.
 @Composable
 fun PruebaServidorScreen(viewModel: PruebaServidorViewModel, onVolver: () -> Unit) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -92,6 +92,8 @@ private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Prue
 
         if (pregunta.tipo == TipoPreguntaPrueba.SECUENCIA) {
             SecuenciaVista(estado, viewModel)
+        } else if (pregunta.tipo == TipoPreguntaPrueba.ASOCIACION) {
+            AsociacionVista(estado, viewModel)
         } else {
             pregunta.opciones.forEachIndexed { i, opcion ->
                 val estadoOpcion = when {
@@ -111,6 +113,8 @@ private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Prue
                     acerto -> stringResource(R.string.eval_acierto)
                     pregunta.tipo == TipoPreguntaPrueba.SECUENCIA ->
                         stringResource(R.string.prueba_orden_correcto, pregunta.ordenCorrecto())
+                    pregunta.tipo == TipoPreguntaPrueba.ASOCIACION ->
+                        stringResource(R.string.prueba_parejas_correctas, pregunta.parejasCorrectas())
                     else -> stringResource(R.string.eval_error)
                 },
                 style = MaterialTheme.typography.titleLarge
@@ -133,6 +137,47 @@ private fun SecuenciaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Pru
         stringResource(R.string.prueba_tu_orden, elegidas.ifEmpty { "—" }),
         style = MaterialTheme.typography.titleMedium
     )
+    opciones.forEachIndexed { i, opcion ->
+        if (i !in estado.seleccion) {
+            OutlinedButton(
+                onClick = { viewModel.elegir(i) },
+                enabled = !estado.corregida,
+                modifier = Modifier.fillMaxWidth().height(52.dp)
+            ) { Text(opcion.texto, style = MaterialTheme.typography.titleMedium) }
+        }
+    }
+    if (!estado.corregida) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = viewModel::deshacer, enabled = estado.seleccion.isNotEmpty()) {
+                Text(stringResource(R.string.prueba_deshacer))
+            }
+            Button(onClick = viewModel::comprobar, enabled = estado.seleccion.size == opciones.size) {
+                Text(stringResource(R.string.prueba_comprobar))
+            }
+        }
+    }
+}
+
+// Asociación: el estudiante toca una opción y luego su pareja; cada par queda unido. Al unirlas todas, comprueba.
+@Composable
+private fun AsociacionVista(estado: PruebaServidorUiState.EnCurso, viewModel: PruebaServidorViewModel) {
+    val opciones = estado.pregunta.opciones
+    val pares = estado.seleccion.chunked(2).filter { it.size == 2 }
+    val pendiente = if (estado.seleccion.size % 2 == 1) estado.seleccion.last() else null
+
+    Text(stringResource(R.string.prueba_asociacion_instruccion), style = MaterialTheme.typography.bodyLarge)
+    if (pares.isNotEmpty()) {
+        Text(stringResource(R.string.prueba_pares_unidos), style = MaterialTheme.typography.titleMedium)
+        pares.forEach { (a, b) ->
+            Text("${opciones[a].texto}  ↔  ${opciones[b].texto}", style = MaterialTheme.typography.titleMedium)
+        }
+    }
+    if (pendiente != null && !estado.corregida) {
+        Text(
+            stringResource(R.string.prueba_busca_pareja, opciones[pendiente].texto),
+            style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary
+        )
+    }
     opciones.forEachIndexed { i, opcion ->
         if (i !in estado.seleccion) {
             OutlinedButton(

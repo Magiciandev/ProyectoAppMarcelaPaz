@@ -17,6 +17,12 @@ class SesionPruebaTest {
         listOf(OpcionPrueba("pa", false, 2), OpcionPrueba("so", false, 1)), puntaje
     )
 
+    private fun asociacion(id: Long, puntaje: Double = 2.0) = PreguntaPrueba(
+        id, TipoPreguntaPrueba.ASOCIACION, "Une $id", null,
+        listOf(OpcionPrueba("gato", false, null, "g"), OpcionPrueba("miau", false, null, "g"),
+            OpcionPrueba("perro", false, null, "p"), OpcionPrueba("guau", false, null, "p")), puntaje
+    )
+
     @Test fun la_seleccion_se_corrige_apenas_se_elige_y_no_se_puede_cambiar() {
         val s = SesionPrueba(listOf(seleccion(1)))
 
@@ -77,5 +83,31 @@ class SesionPruebaTest {
 
         assertEquals(1, s.respuestasDadas().size)
         assertEquals(1.0, s.puntajeObtenido(), 0.0)
+    }
+
+    @Test fun la_asociacion_se_une_de_a_pares_y_solo_se_comprueba_con_todas_unidas() {
+        val s = SesionPrueba(listOf(asociacion(1)))
+
+        s.elegir(0); s.elegir(1); s.elegir(2)
+        s.comprobar() // falta unir un par: no corrige
+        assertFalse(s.corregida)
+
+        s.deshacer() // saca «perro», que estaba a medias
+        assertEquals(listOf(0, 1), s.seleccion)
+
+        s.elegir(2); s.elegir(3); s.comprobar()
+        assertTrue(s.corregida)
+        assertTrue(s.siguiente())
+        assertEquals(2.0, s.puntajeObtenido(), 0.0)
+    }
+
+    @Test fun una_asociacion_mal_unida_vale_cero() {
+        val s = SesionPrueba(listOf(asociacion(1)))
+
+        s.elegir(0); s.elegir(2); s.elegir(1); s.elegir(3); s.comprobar()
+        s.siguiente()
+
+        assertEquals(0.0, s.puntajeObtenido(), 0.0)
+        assertEquals(listOf(listOf(0, 2, 1, 3)), s.respuestasDadas())
     }
 }

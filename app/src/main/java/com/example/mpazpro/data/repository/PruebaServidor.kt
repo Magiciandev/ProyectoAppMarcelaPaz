@@ -27,7 +27,7 @@ sealed interface CargaPrueba {
 object MapeoPrueba {
     /**
      * Las preguntas de la prueba, en su orden y con su puntaje (1 si el servidor no lo dice).
-     * Devuelve null si alguna pregunta es de un tipo que la app todavía no resuelve o no viene en el paquete:
+     * Devuelve null si alguna pregunta es de un tipo que la app no resuelve, es una asociación mal armada o no viene en el paquete:
      * es mejor no dejar rendir una prueba incompleta que dar un puntaje distinto al que el docente espera.
      */
     fun aPreguntas(paquete: PaqueteEvaluacionDto): List<PreguntaPrueba>? {
@@ -39,11 +39,17 @@ object MapeoPrueba {
             val tipo = TipoPreguntaPrueba.desde(dto.tipo) ?: return null
             val opciones = dto.opciones
                 .sortedBy { it.orden ?: Int.MAX_VALUE }
-                .map { OpcionPrueba(it.texto, it.esCorrecta == true, it.posicionCorrecta) }
+                .map { OpcionPrueba(it.texto, it.esCorrecta == true, it.posicionCorrecta, it.parClave) }
+            if (tipo == TipoPreguntaPrueba.ASOCIACION && !asociacionBienArmada(opciones)) return null
             resultado.add(PreguntaPrueba(dto.id, tipo, dto.enunciado, dto.explicacion, opciones, enPrueba.puntaje ?: 1.0))
         }
         return resultado
     }
+
+    // Una asociación se puede resolver solo si todas sus opciones forman parejas: cada clave aparece exactamente dos veces.
+    private fun asociacionBienArmada(opciones: List<OpcionPrueba>): Boolean =
+        opciones.isNotEmpty() && opciones.all { it.parClave != null } &&
+            opciones.groupBy { it.parClave }.values.all { it.size == 2 }
 }
 
 // Arma lo que se envía a /progreso/sync cuando el estudiante termina la prueba: un intento con todas sus respuestas.
