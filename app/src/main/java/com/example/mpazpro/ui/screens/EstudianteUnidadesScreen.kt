@@ -13,6 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,9 @@ fun EstudianteUnidadesScreen(
     onVolver: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Al volver de rendir una prueba se piden de nuevo las asignaciones, para ver los intentos al día.
+    LaunchedEffect(Unit) { viewModel.recargar() }
 
     ScaffoldConVolver(titulo = stringResource(R.string.est_titulo), onVolver = onVolver) { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {

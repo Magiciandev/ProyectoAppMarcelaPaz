@@ -53,6 +53,12 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
+Fase 6, paso 4b: **rendir la prueba** de una unidad del servidor. La app pide la prueba (preguntas con su puntaje) y los
+intentos que el docente permite; el estudiante resuelve preguntas de selección, completación y secuencia, y al terminar
+la app envía el intento a `/progreso/sync`, que lo acepta o lo rechaza con un motivo (límite de intentos, fuera de fecha,
+etc.). Si el envío falla, «Reintentar» manda el mismo lote sin que cuente dos veces. Una prueba con preguntas de
+asociación todavía no se puede rendir (paso 4c). La app corrige localmente y el servidor guarda lo que ella le envía.
+
 Fase 6, paso 4a: **el estudiante** ve en «Mis evaluaciones» lo que su docente le asignó en el servidor (con los intentos
 usados y permitidos y la fecha límite) y puede leer el contenido de esa unidad. Al abrir la pantalla también registra su
 última conexión. La prueba de esas unidades llega en el paso 4b.

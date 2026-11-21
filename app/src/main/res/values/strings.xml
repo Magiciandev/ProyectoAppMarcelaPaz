@@ -97,7 +97,16 @@
     <string name="imagen_desc">Imagen de apoyo de %1$s</string>
     <string name="contenido_titulo">Aprende</string>
     <string name="contenido_rendir">Rendir la prueba</string>
-    <string name="contenido_prueba_pronto">La prueba de esta unidad llega en el siguiente paso.</string>
+    <string name="prueba_secuencia_instruccion">Toca las opciones en el orden correcto.</string>
+    <string name="prueba_tu_orden">Tu orden: %1$s</string>
+    <string name="prueba_deshacer">Deshacer</string>
+    <string name="prueba_comprobar">Comprobar</string>
+    <string name="prueba_orden_correcto">El orden correcto es: %1$s</string>
+    <string name="prueba_error_envio">No se pudo enviar tu intento: %1$s</string>
+    <string name="prueba_reintentar">Reintentar</string>
+    <string name="prueba_resultado_puntos">Obtuviste %1$s de %2$s puntos</string>
+    <string name="prueba_porcentaje">%1$d%%</string>
+    <string name="prueba_no_registrado">Tu intento no quedó registrado. %1$s</string>
     <string name="asignar_titulo">Asignar unidad</string>
     <string name="asignar_curso">Curso</string>
     <string name="asignar_desde">Disponible desde</string>

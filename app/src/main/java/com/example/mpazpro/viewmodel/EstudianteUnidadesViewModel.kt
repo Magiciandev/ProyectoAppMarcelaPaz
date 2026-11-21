@@ -47,11 +47,10 @@ class EstudianteUnidadesViewModel(
     // Lo que el docente le asignó en el servidor (vacío mientras carga o si no hay conexión).
     private val _delServidor = MutableStateFlow<List<UnidadEstudiante>>(emptyList())
 
-    init { cargarDelServidor() }
-
-    // Al abrir la pantalla: avisa la conexión, trae las unidades publicadas y pide las asignaciones vigentes.
+    // La pantalla la llama cada vez que se abre o se vuelve a ella (por ejemplo, después de rendir una prueba):
+    // avisa la conexión, trae las unidades publicadas y pide las asignaciones vigentes con sus intentos usados.
     // Cada asignación se muestra con la copia local de su unidad (si aún no se descargó, se omite).
-    private fun cargarDelServidor() {
+    fun recargar() {
         viewModelScope.launch {
             asignacionRepository.registrarConexion()
             unidadRepository.actualizarDesdeServidor()

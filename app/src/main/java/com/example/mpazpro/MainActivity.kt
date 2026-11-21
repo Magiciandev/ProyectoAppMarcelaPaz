@@ -24,6 +24,7 @@ import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.ui.components.Notificaciones
 import com.example.mpazpro.data.repository.SemillaDatos
+import com.example.mpazpro.data.repository.PruebaServidor
 import com.example.mpazpro.data.repository.UnidadRepository
 import com.example.mpazpro.data.repository.UnidadServidor
 import com.example.mpazpro.data.repository.UsuarioRepository
@@ -71,7 +72,8 @@ class MainActivity : ComponentActivity() {
                 baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
             ),
             catalogoRepository = catalogoRepository,
-            sesionStore = sesion
+            sesionStore = sesion,
+            pruebaServidor = PruebaServidor(cliente.evaluaciones, cliente.progreso)
         )
 
         Notificaciones.crearCanal(applicationContext)

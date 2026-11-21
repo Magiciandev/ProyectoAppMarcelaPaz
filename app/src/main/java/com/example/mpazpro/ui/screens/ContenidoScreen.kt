@@ -31,7 +31,12 @@ import com.example.mpazpro.viewmodel.ContenidoViewModel
 
 // Estudiante: lee el contenido de la unidad (con su imagen de apoyo) y pasa a la prueba.
 @Composable
-fun ContenidoScreen(viewModel: ContenidoViewModel, onRendir: () -> Unit, onVolver: () -> Unit) {
+fun ContenidoScreen(
+    viewModel: ContenidoViewModel,
+    onRendir: () -> Unit,
+    onRendirServidor: () -> Unit,
+    onVolver: () -> Unit
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ScaffoldConVolver(titulo = stringResource(R.string.contenido_titulo), onVolver = onVolver) { padding ->
@@ -50,13 +55,10 @@ fun ContenidoScreen(viewModel: ContenidoViewModel, onRendir: () -> Unit, onVolve
                         AsignaturaChip(nombre = u.asignatura, colorTiza = colorTizaDe(u.asignatura))
                         ImagenApoyo(ruta = u.imagenRuta, descripcion = stringResource(R.string.imagen_desc, u.titulo))
                         Text(u.contenido, style = MaterialTheme.typography.bodyLarge)
-                        if (u.objetivoServidorId == null) {
-                            Button(onClick = onRendir, modifier = Modifier.fillMaxWidth().height(60.dp)) {
-                                Text(stringResource(R.string.contenido_rendir), style = MaterialTheme.typography.titleMedium)
-                            }
-                        } else {
-                            // Las preguntas de las unidades del servidor llegan a la app en el paso siguiente.
-                            Text(stringResource(R.string.contenido_prueba_pronto), style = MaterialTheme.typography.bodyMedium)
+                        // Una unidad del servidor se rinde contra el servidor; una local, con sus preguntas del teléfono.
+                        val alRendir = if (u.objetivoServidorId == null) onRendir else onRendirServidor
+                        Button(onClick = alRendir, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                            Text(stringResource(R.string.contenido_rendir), style = MaterialTheme.typography.titleMedium)
                         }
                     }
                 }

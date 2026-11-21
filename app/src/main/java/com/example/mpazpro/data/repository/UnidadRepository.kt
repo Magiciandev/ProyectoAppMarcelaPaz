@@ -81,6 +81,10 @@ class UnidadRepository(
             }
         }
 
+    // El id que tiene en el servidor el objetivo de una unidad (null si la unidad solo existe en el teléfono).
+    suspend fun objetivoServidorDe(unidadId: Long): Long? =
+        withContext(Dispatchers.IO) { dao.buscarPorId(unidadId)?.objetivoServidorId }
+
     // La copia local de una unidad del servidor (null si todavía no se ha descargado).
     suspend fun buscarPorObjetivoServidor(objetivoId: Long): Unidad? =
         withContext(Dispatchers.IO) { dao.buscarPorObjetivoServidor(objetivoId) }
