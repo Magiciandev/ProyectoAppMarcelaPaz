@@ -10,17 +10,23 @@ Proyecto de la asignatura DSY1105 · Desarrollo de Aplicaciones Móviles (Evalua
 **Todos los datos son ficticios.**
 
 En esta etapa la app se **conecta a un backend** de cinco microservicios Spring Boot detrás de un API Gateway (repositorio
-aparte, `mpaz-backend`) y funciona también **sin conexión**: guarda en el teléfono lo necesario para practicar y rendir la
+aparte: [ProyectoAppMarcelaPaz-backend](https://github.com/Magiciandev/ProyectoAppMarcelaPaz-backend)) y funciona también **sin conexión**: guarda en el teléfono lo necesario para practicar y rendir la
 prueba, y sincroniza solo cuando vuelve la red.
 
 ## Equipo
 
-| Integrante | Rol en el desarrollo |
-|---|---|
-| Max Herrera | Login y panel por rol, informes docentes, observaciones y notificaciones locales |
-| Victor Navarrete | Unidades y estados, evaluaciones, asignación a cursos y selector de fotos |
+Trabajo dividido en partes iguales (50 % / 50 %), tanto en la app como en el backend. Cada integrante hizo sus commits y
+puede explicar su parte; lo compartido se trabajó en conjunto.
 
-- Repositorio: https://github.com/Magiciandev/ProyectoAppMarcelaPaz
+| Parte | Max Herrera | Víctor Navarrete |
+|---|---|---|
+| **App: pantallas y lógica** | Login y panel por rol · sesión y copia local del PIN · monitoreo e informes del docente (nivel de logro, observación, validación, reinicio) · avance del estudiante · notificaciones locales | Catálogo, unidades y objetivos con sus 5 estados · asignación a cursos · actividades y prueba con intentos (4 tipos de pregunta) · editor de preguntas · selector de fotos |
+| **App: modo sin conexión** | Cola de intentos pendientes, WorkManager y envío a `/progreso/sync` | Caché de asignaciones y paquetes de evaluación para rendir sin red |
+| **Backend** | `api-gateway` · `ms-auth` (JWT y PIN con BCrypt) · `ms-progreso` (asignaciones, sincronización, monitoreo, informes) | `ms-contenidos` · `ms-actividades-evaluaciones` (banco de preguntas y paquete de evaluación) |
+| **En conjunto** | Contrato de la API · `ms-admin` (ciclo de 5 estados) · capa remota con Retrofit · pruebas, QA y documentación | |
+
+- Repositorio de la app: https://github.com/Magiciandev/ProyectoAppMarcelaPaz
+- Repositorio del backend: https://github.com/Magiciandev/ProyectoAppMarcelaPaz-backend
 
 ## Funcionalidades
 
@@ -83,7 +89,7 @@ La lógica (cálculos, mapeos, políticas) vive en objetos puros que se prueban 
 
 ## Cómo ejecutar
 
-1. Levantar el backend (`mpaz-backend`): MySQL encendido, `build-all.bat` y `docker compose up -d`. Detalle y direcciones según dónde corra la app (emulador, celular por cable o por WiFi) en `docs/CONEXION_BACKEND.md`.
+1. Levantar el backend ([repositorio del backend](https://github.com/Magiciandev/ProyectoAppMarcelaPaz-backend)): MySQL encendido, `build-all.bat` y `docker compose up -d`. Detalle y direcciones según dónde corra la app (emulador, celular por cable o por WiFi) en `docs/CONEXION_BACKEND.md`.
 2. Clonar este repositorio, abrirlo en Android Studio y esperar la sincronización de Gradle (JDK incluido en Android Studio).
 3. Crear o elegir un emulador con Android 10 (API 29) o superior, o conectar un celular con depuración USB activada. El emulador llega al backend en `http://10.0.2.2:9090/` (valor por defecto).
 4. Ejecutar el módulo `app`.
