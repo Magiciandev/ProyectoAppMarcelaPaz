@@ -76,6 +76,7 @@
     <string name="est_vacio">Todavía no hay evaluaciones disponibles.</string>
     <string name="est_sin_intentos">Aún no la has rendido</string>
     <string name="est_ultimo">Último resultado: %1$d%%</string>
+    <string name="est_intentos_servidor">Intentos: %1$d de %2$d · hasta el %3$s</string>
     <string name="eval_titulo">Evaluación</string>
     <string name="eval_progreso">Pregunta %1$d de %2$d</string>
     <string name="eval_acierto">¡Muy bien!</string>
@@ -96,6 +97,7 @@
     <string name="imagen_desc">Imagen de apoyo de %1$s</string>
     <string name="contenido_titulo">Aprende</string>
     <string name="contenido_rendir">Rendir la prueba</string>
+    <string name="contenido_prueba_pronto">La prueba de esta unidad llega en el siguiente paso.</string>
     <string name="asignar_titulo">Asignar unidad</string>
     <string name="asignar_curso">Curso</string>
     <string name="asignar_desde">Disponible desde</string>

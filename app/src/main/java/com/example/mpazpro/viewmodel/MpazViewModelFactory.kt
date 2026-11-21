@@ -42,7 +42,7 @@ class MpazViewModelFactory(
             modelClass.isAssignableFrom(PreguntasEditorViewModel::class.java) ->
                 PreguntasEditorViewModel(handle, evaluacionRepository) as T
             modelClass.isAssignableFrom(EstudianteUnidadesViewModel::class.java) ->
-                EstudianteUnidadesViewModel(handle, unidadRepository, evaluacionRepository, usuarioRepository) as T
+                EstudianteUnidadesViewModel(handle, unidadRepository, evaluacionRepository, usuarioRepository, asignacionRepository) as T
             modelClass.isAssignableFrom(EvaluacionViewModel::class.java) ->
                 EvaluacionViewModel(handle, evaluacionRepository, asignacionRepository) as T
             modelClass.isAssignableFrom(AsignarViewModel::class.java) ->

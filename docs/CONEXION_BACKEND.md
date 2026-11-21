@@ -53,6 +53,10 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
+Fase 6, paso 4a: **el estudiante** ve en «Mis evaluaciones» lo que su docente le asignó en el servidor (con los intentos
+usados y permitidos y la fecha límite) y puede leer el contenido de esa unidad. Al abrir la pantalla también registra su
+última conexión. La prueba de esas unidades llega en el paso 4b.
+
 Fase 6, paso 3: **asignar una unidad a un curso** (docente) se hace en el servidor cuando la unidad existe allí (crea
 la asignación o, si ya existía para ese curso, la edita). Las asignaciones del servidor no se copian a la base local:
 los estudiantes las verán cuando su flujo pase al servidor (paso 4). Las unidades de ejemplo siguen asignándose en el

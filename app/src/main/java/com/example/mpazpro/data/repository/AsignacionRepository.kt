@@ -4,6 +4,7 @@ import com.example.mpazpro.data.local.AsignacionDao
 import com.example.mpazpro.data.local.UnidadDao
 import com.example.mpazpro.data.model.Asignacion
 import com.example.mpazpro.data.remote.ResultadoRemoto
+import com.example.mpazpro.data.remote.dto.AsignacionEstudianteDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -61,6 +62,26 @@ class AsignacionRepository(
                 }
             }
         }
+
+    // Estudiante: lo que su docente le asignó en el servidor. Sin conexión o sin sesión del servidor, la lista viene
+    // vacía y la pantalla muestra solo lo que hay en el teléfono.
+    suspend fun misAsignacionesDelServidor(): List<AsignacionEstudianteDto> =
+        withContext(Dispatchers.IO) {
+            if (servidor == null) {
+                emptyList()
+            } else {
+                when (val remoto = servidor.misAsignaciones()) {
+                    is ResultadoRemoto.Ok -> remoto.valor
+                    is ResultadoRemoto.ErrorHttp -> emptyList()
+                    is ResultadoRemoto.SinConexion -> emptyList()
+                }
+            }
+        }
+
+    // Estudiante: deja registrada la conexión en el servidor. Si falla no pasa nada: es solo información para el docente.
+    suspend fun registrarConexion() {
+        withContext(Dispatchers.IO) { servidor?.registrarConexion() }
+    }
 
     private suspend fun objetivoServidorDe(unidadId: Long): Long? = unidadDao?.buscarPorId(unidadId)?.objetivoServidorId
 }

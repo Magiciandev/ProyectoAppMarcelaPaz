@@ -81,6 +81,10 @@ class UnidadRepository(
             }
         }
 
+    // La copia local de una unidad del servidor (null si todavía no se ha descargado).
+    suspend fun buscarPorObjetivoServidor(objetivoId: Long): Unidad? =
+        withContext(Dispatchers.IO) { dao.buscarPorObjetivoServidor(objetivoId) }
+
     // Descarga el catálogo del servidor y deja una unidad local por cada objetivo (nueva o puesta al día).
     // Devuelve cuántas unidades cambiaron. Las unidades que solo existen en el teléfono no se tocan.
     suspend fun actualizarDesdeServidor(): ResultadoRemoto<Int> =

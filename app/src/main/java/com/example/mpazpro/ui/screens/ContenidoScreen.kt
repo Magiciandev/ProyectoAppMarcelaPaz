@@ -50,8 +50,13 @@ fun ContenidoScreen(viewModel: ContenidoViewModel, onRendir: () -> Unit, onVolve
                         AsignaturaChip(nombre = u.asignatura, colorTiza = colorTizaDe(u.asignatura))
                         ImagenApoyo(ruta = u.imagenRuta, descripcion = stringResource(R.string.imagen_desc, u.titulo))
                         Text(u.contenido, style = MaterialTheme.typography.bodyLarge)
-                        Button(onClick = onRendir, modifier = Modifier.fillMaxWidth().height(60.dp)) {
-                            Text(stringResource(R.string.contenido_rendir), style = MaterialTheme.typography.titleMedium)
+                        if (u.objetivoServidorId == null) {
+                            Button(onClick = onRendir, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                                Text(stringResource(R.string.contenido_rendir), style = MaterialTheme.typography.titleMedium)
+                            }
+                        } else {
+                            // Las preguntas de las unidades del servidor llegan a la app en el paso siguiente.
+                            Text(stringResource(R.string.contenido_prueba_pronto), style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }

@@ -36,8 +36,11 @@ class AsignacionServidorTest {
     /** API falsa de progreso: dos cursos, las asignaciones que se le den y un registro de lo que recibe. */
     private class ProgresoFalso(
         private val existentes: Map<Long, List<AsignacionDto>> = emptyMap(),
-        private val errorAlCrear: Exception? = null
+        private val errorAlCrear: Exception? = null,
+        private val propias: List<AsignacionEstudianteDto> = emptyList(),
+        private val errorDeRed: Exception? = null
     ) : ProgresoApi {
+        var conexiones = 0
         var creada: AsignacionRequestDto? = null
         var actualizada: Pair<Long, AsignacionRequestDto>? = null
 
@@ -58,9 +61,18 @@ class AsignacionServidorTest {
 
         // Lo que estas pruebas no usan falla si alguien lo llama.
         override suspend fun yo(): EstudianteMeDto = throw NotImplementedError()
-        override suspend fun misAsignaciones(): List<AsignacionEstudianteDto> = throw NotImplementedError()
+        override suspend fun misAsignaciones(): List<AsignacionEstudianteDto> {
+            if (errorDeRed != null) throw errorDeRed
+            return propias
+        }
+
+        override suspend fun conexion(): Response<Unit> {
+            if (errorDeRed != null) throw errorDeRed
+            conexiones++
+            return Response.success(Unit)
+        }
+
         override suspend fun miAvance(): AvanceDto = throw NotImplementedError()
-        override suspend fun conexion(): Response<Unit> = throw NotImplementedError()
         override suspend fun sincronizar(lote: SyncRequestDto): SyncResponseDto = throw NotImplementedError()
         override suspend fun estudiantesDelCurso(cursoId: Long): List<EstudianteCursoDto> = throw NotImplementedError()
         override suspend fun resumen(estudianteId: Long): ResumenDto = throw NotImplementedError()
@@ -164,5 +176,36 @@ class AsignacionServidorTest {
         assertEquals(listOf("2° A", "2° B"), lista.map { it.curso })
         assertEquals(listOf(7L, 9L), lista.map { it.id })
         assertTrue(lista.all { it.unidadId == 9L })
+    }
+
+    @Test fun el_estudiante_recibe_sus_asignaciones_con_los_intentos_usados() = runBlocking {
+        val propia = AsignacionEstudianteDto(
+            asignacionId = 3, objetivoId = 100, fechaDesde = "2026-11-19", fechaHasta = "2026-12-19",
+            limiteIntentos = 3, intentosUsados = 1
+        )
+
+        val r = AsignacionServidor(ProgresoFalso(propias = listOf(propia))).misAsignaciones()
+
+        assertTrue(r is ResultadoRemoto.Ok)
+        val lista = (r as ResultadoRemoto.Ok<List<AsignacionEstudianteDto>>).valor
+        assertEquals(listOf(100L), lista.map { it.objetivoId })
+        assertEquals(1L, lista.single().intentosUsados)
+        assertEquals(3, lista.single().limiteIntentos)
+    }
+
+    @Test fun sin_red_las_asignaciones_del_estudiante_informan_sin_conexion() = runBlocking {
+        val r = AsignacionServidor(ProgresoFalso(errorDeRed = java.io.IOException("sin red"))).misAsignaciones()
+
+        assertTrue(r is ResultadoRemoto.SinConexion)
+    }
+
+    @Test fun registrar_la_conexion_avisa_al_servidor() = runBlocking {
+        val api = ProgresoFalso()
+
+        val r = AsignacionServidor(api).registrarConexion()
+
+        assertTrue(r is ResultadoRemoto.Ok)
+        assertEquals(true, (r as ResultadoRemoto.Ok<Boolean>).valor)
+        assertEquals(1, api.conexiones)
     }
 }

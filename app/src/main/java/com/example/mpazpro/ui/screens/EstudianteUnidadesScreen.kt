@@ -21,6 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mpazpro.R
+import com.example.mpazpro.data.repository.MapeoAsignacion
+import com.example.mpazpro.ui.components.formatearFecha
 import com.example.mpazpro.ui.components.ScaffoldConVolver
 import com.example.mpazpro.ui.components.UnidadCard
 import com.example.mpazpro.viewmodel.EstudianteUnidadesUiState
@@ -52,7 +54,14 @@ fun EstudianteUnidadesScreen(
                             items(items = estado.items, key = { it.unidad.id }) { item ->
                                 UnidadCard(
                                     titulo = item.unidad.titulo,
-                                    detalle = item.ultimoPorcentaje?.let { stringResource(R.string.est_ultimo, it) }
+                                    // Del servidor: intentos usados y permitidos, y hasta cuándo puede rendir.
+                                    detalle = item.asignacion?.let {
+                                        stringResource(
+                                            R.string.est_intentos_servidor, it.intentosUsados, it.limiteIntentos,
+                                            formatearFecha(MapeoAsignacion.finDelDia(it.fechaHasta))
+                                        )
+                                    }
+                                        ?: item.ultimoPorcentaje?.let { stringResource(R.string.est_ultimo, it) }
                                         ?: stringResource(R.string.est_sin_intentos),
                                     asignatura = item.unidad.asignatura,
                                     onClick = { onAbrir(item.unidad.id) }

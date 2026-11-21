@@ -4,6 +4,7 @@ import com.example.mpazpro.data.model.Asignacion
 import com.example.mpazpro.data.remote.ResultadoRemoto
 import com.example.mpazpro.data.remote.api.ProgresoApi
 import com.example.mpazpro.data.remote.dto.AsignacionDto
+import com.example.mpazpro.data.remote.dto.AsignacionEstudianteDto
 import com.example.mpazpro.data.remote.dto.AsignacionRequestDto
 import com.example.mpazpro.data.remote.llamarApi
 
@@ -45,6 +46,14 @@ class AsignacionServidor(private val api: ProgresoApi) {
         val existente = api.asignaciones(cursoId).firstOrNull { it.objetivoId == objetivoId && it.cursoId == cursoId }
         return if (existente != null) api.actualizarAsignacion(existente.id, cuerpo) else api.crearAsignacion(cuerpo)
     }
+
+    /** Estudiante: lo que le asignaron y está vigente (de su curso o individual), con los intentos que lleva usados. */
+    suspend fun misAsignaciones(): ResultadoRemoto<List<AsignacionEstudianteDto>> =
+        llamarApi { api.misAsignaciones() }
+
+    /** Estudiante: avisa al servidor que se conectó (el docente ve la última conexión de cada estudiante). */
+    suspend fun registrarConexion(): ResultadoRemoto<Boolean> =
+        llamarApi { api.conexion().isSuccessful }
 
     /** Las asignaciones de un objetivo en todos los cursos del docente, listas para mostrar. */
     suspend fun listar(objetivoId: Long, unidadId: Long): ResultadoRemoto<List<Asignacion>> =
