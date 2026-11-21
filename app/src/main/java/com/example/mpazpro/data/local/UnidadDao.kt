@@ -19,6 +19,9 @@ interface UnidadDao {
     @Query("SELECT * FROM unidades WHERE id = :id")
     fun observarPorId(id: Long): Flow<Unidad?>
 
+    @Query("SELECT * FROM unidades WHERE id = :id")
+    suspend fun buscarPorId(id: Long): Unidad?
+
     @Query("UPDATE unidades SET estado = :estado WHERE id = :id")
     suspend fun actualizarEstado(id: Long, estado: String)
 

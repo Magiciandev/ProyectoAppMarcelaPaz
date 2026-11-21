@@ -53,6 +53,11 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
+Fase 6, paso 3: **asignar una unidad a un curso** (docente) se hace en el servidor cuando la unidad existe allí (crea
+la asignación o, si ya existía para ese curso, la edita). Las asignaciones del servidor no se copian a la base local:
+los estudiantes las verán cuando su flujo pase al servidor (paso 4). Las unidades de ejemplo siguen asignándose en el
+teléfono.
+
 Fase 6, paso 2: **los estados de la UTP** (enviar a revisión, autorizar, rechazar, publicar, deshabilitar y reabrir) se
 piden a `ms-admin` cuando la unidad existe en el servidor, y en «Unidades» la UTP trae las del servidor (al abrir la
 pantalla y con el botón «Actualizar»). El servidor puede rechazar el cambio (por ejemplo, enviar a revisión exige una

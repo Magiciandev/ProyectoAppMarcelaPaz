@@ -59,8 +59,8 @@ fun UnidadesScreen(
     val mensaje by viewModel.mensaje.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
 
-    // Solo la UTP trae las unidades del servidor al abrir la pantalla.
-    LaunchedEffect(editable) { if (editable) viewModel.actualizar() }
+    // UTP y docente traen las unidades del servidor al abrir la pantalla (el docente ve lo autorizado y publicado).
+    LaunchedEffect(Unit) { viewModel.actualizar() }
     LaunchedEffect(mensaje) {
         mensaje?.let {
             snackbar.showSnackbar(it)
@@ -101,9 +101,7 @@ fun UnidadesContenido(
                     }
                 },
                 actions = {
-                    if (editable) {
-                        TextButton(onClick = onActualizar) { Text(stringResource(R.string.unidades_actualizar)) }
-                    }
+                    TextButton(onClick = onActualizar) { Text(stringResource(R.string.unidades_actualizar)) }
                 }
             )
         },

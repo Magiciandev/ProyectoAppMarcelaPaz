@@ -23,4 +23,12 @@ object TransicionesUnidad {
     fun accionesDesde(estado: String): List<AccionEstado> = AccionEstado.entries.filter { it.desde == estado }
 
     fun permite(estado: String, accion: AccionEstado): Boolean = accion.desde == estado
+
+    /**
+     * El docente asigna unidades publicadas. Las que vienen del servidor también se pueden asignar estando solo
+     * autorizadas, porque el servidor lo permite (el docente ve lo autorizado y lo publicado).
+     */
+    fun docentePuedeAsignar(unidad: Unidad): Boolean =
+        unidad.estado == EstadoUnidad.PUBLICADO ||
+            (unidad.objetivoServidorId != null && unidad.estado == EstadoUnidad.AUTORIZADO)
 }

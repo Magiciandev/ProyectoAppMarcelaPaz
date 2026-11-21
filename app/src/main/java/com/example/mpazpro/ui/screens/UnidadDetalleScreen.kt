@@ -97,12 +97,9 @@ fun UnidadDetalleScreen(
                                 onClick = { selector.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                                 modifier = Modifier.fillMaxWidth()
                             ) { Text(stringResource(R.string.detalle_imagen)) }
-                        } else if (unidad.estado == EstadoUnidad.PUBLICADO && unidad.objetivoServidorId == null) {
+                        } else if (TransicionesUnidad.docentePuedeAsignar(unidad)) {
                             // Docente: solo puede asignar unidades ya publicadas por UTP.
                             BotonAccion(stringResource(R.string.detalle_asignar)) { onAsignar(unidad.id) }
-                        } else if (unidad.estado == EstadoUnidad.PUBLICADO) {
-                            // Una unidad del servidor aún no trae sus preguntas a la app: se asigna en el paso siguiente.
-                            Text(stringResource(R.string.detalle_asignar_pronto), style = MaterialTheme.typography.bodyMedium)
                         }
                         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 

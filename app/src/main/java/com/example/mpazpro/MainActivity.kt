@@ -17,6 +17,7 @@ import com.example.mpazpro.data.remote.AutenticacionRemota
 import com.example.mpazpro.data.remote.ClienteApi
 import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.AsignacionServidor
 import com.example.mpazpro.data.repository.AprobacionServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
@@ -63,7 +64,9 @@ class MainActivity : ComponentActivity() {
                 baseDeDatos.usuarioDao(), semilla, AutenticacionRemota(cliente.auth, sesion)
             ),
             evaluacionRepository = EvaluacionRepository(baseDeDatos.preguntaDao(), baseDeDatos.evaluacionDao()),
-            asignacionRepository = AsignacionRepository(baseDeDatos.asignacionDao()),
+            asignacionRepository = AsignacionRepository(
+                baseDeDatos.asignacionDao(), baseDeDatos.unidadDao(), AsignacionServidor(cliente.progreso)
+            ),
             informeRepository = InformeRepository(
                 baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
             ),

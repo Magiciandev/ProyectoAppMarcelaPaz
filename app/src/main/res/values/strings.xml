@@ -56,7 +56,6 @@
     <string name="detalle_autorizar">Autorizar</string>
     <string name="detalle_publicar">Publicar</string>
     <string name="detalle_reabrir">Reabrir como borrador</string>
-    <string name="detalle_asignar_pronto">Esta unidad viene del servidor: asignarla a un curso llega en el siguiente paso.</string>
     <string name="detalle_rechazar">Rechazar</string>
     <string name="detalle_deshabilitar">Deshabilitar</string>
     <string name="detalle_preguntas">Editar preguntas de la prueba</string>

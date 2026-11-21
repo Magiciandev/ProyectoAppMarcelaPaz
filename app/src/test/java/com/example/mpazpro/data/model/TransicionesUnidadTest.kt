@@ -62,4 +62,28 @@ class TransicionesUnidadTest {
             AccionEstado.entries.map { it.name }.toSet()
         )
     }
+
+    private fun unidad(estado: String, objetivoServidorId: Long? = null) = Unidad(
+        titulo = "Unidad", objetivoAprendizaje = "OA01", asignatura = Asignaturas.LENGUAJE,
+        contenido = "Contenido", estado = estado, objetivoServidorId = objetivoServidorId
+    )
+
+    @Test fun el_docente_asigna_unidades_publicadas() {
+        assertTrue(TransicionesUnidad.docentePuedeAsignar(unidad(EstadoUnidad.PUBLICADO)))
+        assertTrue(TransicionesUnidad.docentePuedeAsignar(unidad(EstadoUnidad.PUBLICADO, objetivoServidorId = 4)))
+    }
+
+    @Test fun una_unidad_autorizada_del_servidor_tambien_se_asigna() {
+        assertTrue(TransicionesUnidad.docentePuedeAsignar(unidad(EstadoUnidad.AUTORIZADO, objetivoServidorId = 4)))
+    }
+
+    @Test fun una_unidad_autorizada_solo_local_no_se_asigna() {
+        assertFalse(TransicionesUnidad.docentePuedeAsignar(unidad(EstadoUnidad.AUTORIZADO)))
+    }
+
+    @Test fun borrador_revision_y_deshabilitada_no_se_asignan() {
+        listOf(EstadoUnidad.BORRADOR, EstadoUnidad.EN_REVISION, EstadoUnidad.DESHABILITADO).forEach { estado ->
+            assertFalse(estado, TransicionesUnidad.docentePuedeAsignar(unidad(estado, objetivoServidorId = 4)))
+        }
+    }
 }
