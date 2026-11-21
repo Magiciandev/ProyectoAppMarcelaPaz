@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.mpazpro.data.remote.SesionStore
+import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
@@ -24,7 +25,8 @@ class MpazViewModelFactory(
     private val informeRepository: InformeRepository,
     private val catalogoRepository: CatalogoRepository,
     private val sesionStore: SesionStore,
-    private val pruebaServidor: PruebaServidor
+    private val pruebaServidor: PruebaServidor,
+    private val actividadesServidor: ActividadesServidor
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -49,6 +51,8 @@ class MpazViewModelFactory(
                 EvaluacionViewModel(handle, evaluacionRepository, asignacionRepository) as T
             modelClass.isAssignableFrom(PruebaServidorViewModel::class.java) ->
                 PruebaServidorViewModel(handle, unidadRepository, pruebaServidor) as T
+            modelClass.isAssignableFrom(ActividadesViewModel::class.java) ->
+                ActividadesViewModel(handle, unidadRepository, actividadesServidor) as T
             modelClass.isAssignableFrom(AsignarViewModel::class.java) ->
                 AsignarViewModel(handle, asignacionRepository) as T
             modelClass.isAssignableFrom(ContenidoViewModel::class.java) ->

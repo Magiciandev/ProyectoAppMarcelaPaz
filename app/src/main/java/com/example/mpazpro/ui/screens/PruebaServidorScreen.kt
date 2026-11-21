@@ -57,7 +57,9 @@ fun PruebaServidorScreen(viewModel: PruebaServidorViewModel, onVolver: () -> Uni
                         Text(stringResource(R.string.prueba_reintentar))
                     }
                 }
-                is PruebaServidorUiState.EnCurso -> PreguntaVista(estado, viewModel)
+                is PruebaServidorUiState.EnCurso -> PreguntaVista(
+                    estado, AccionesPregunta(viewModel::elegir, viewModel::deshacer, viewModel::comprobar, viewModel::siguiente)
+                )
                 is PruebaServidorUiState.Finalizada -> ResultadoVista(estado, onVolver)
             }
         }
@@ -72,8 +74,16 @@ private fun TextoCentrado(texto: String, error: Boolean = false) {
     )
 }
 
+// Lo que la pantalla de una pregunta le pide a quien la maneja (la prueba o una actividad).
+class AccionesPregunta(
+    val elegir: (Int) -> Unit,
+    val deshacer: () -> Unit,
+    val comprobar: () -> Unit,
+    val siguiente: () -> Unit
+)
+
 @Composable
-private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: PruebaServidorViewModel) {
+internal fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, acciones: AccionesPregunta) {
     val pregunta = estado.pregunta
     val avance by animateFloatAsState(
         targetValue = (estado.indice + if (estado.corregida) 1 else 0) / estado.total.toFloat(),
@@ -91,9 +101,9 @@ private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Prue
         Text(pregunta.enunciado, style = MaterialTheme.typography.headlineSmall)
 
         if (pregunta.tipo == TipoPreguntaPrueba.SECUENCIA) {
-            SecuenciaVista(estado, viewModel)
+            SecuenciaVista(estado, acciones)
         } else if (pregunta.tipo == TipoPreguntaPrueba.ASOCIACION) {
-            AsociacionVista(estado, viewModel)
+            AsociacionVista(estado, acciones)
         } else {
             pregunta.opciones.forEachIndexed { i, opcion ->
                 val estadoOpcion = when {
@@ -102,7 +112,7 @@ private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Prue
                     i in estado.seleccion -> EstadoOpcion.INCORRECTA
                     else -> EstadoOpcion.BLOQUEADA
                 }
-                OpcionRespuesta(('A' + i).toString(), opcion.texto, estadoOpcion, onClick = { viewModel.elegir(i) })
+                OpcionRespuesta(('A' + i).toString(), opcion.texto, estadoOpcion, onClick = { acciones.elegir(i) })
             }
         }
 
@@ -120,7 +130,7 @@ private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Prue
                 style = MaterialTheme.typography.titleLarge
             )
             pregunta.explicacion?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
-            Button(onClick = viewModel::siguiente, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            Button(onClick = acciones.siguiente, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Text(stringResource(if (estado.esUltima) R.string.eval_terminar else R.string.eval_siguiente))
             }
         }
@@ -129,7 +139,7 @@ private fun PreguntaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Prue
 
 // Secuencia: el estudiante toca las opciones en el orden que cree correcto y luego comprueba.
 @Composable
-private fun SecuenciaVista(estado: PruebaServidorUiState.EnCurso, viewModel: PruebaServidorViewModel) {
+private fun SecuenciaVista(estado: PruebaServidorUiState.EnCurso, acciones: AccionesPregunta) {
     val opciones = estado.pregunta.opciones
     val elegidas = estado.seleccion.joinToString(" → ") { opciones[it].texto }
     Text(stringResource(R.string.prueba_secuencia_instruccion), style = MaterialTheme.typography.bodyLarge)
@@ -140,7 +150,7 @@ private fun SecuenciaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Pru
     opciones.forEachIndexed { i, opcion ->
         if (i !in estado.seleccion) {
             OutlinedButton(
-                onClick = { viewModel.elegir(i) },
+                onClick = { acciones.elegir(i) },
                 enabled = !estado.corregida,
                 modifier = Modifier.fillMaxWidth().height(52.dp)
             ) { Text(opcion.texto, style = MaterialTheme.typography.titleMedium) }
@@ -148,10 +158,10 @@ private fun SecuenciaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Pru
     }
     if (!estado.corregida) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = viewModel::deshacer, enabled = estado.seleccion.isNotEmpty()) {
+            TextButton(onClick = acciones.deshacer, enabled = estado.seleccion.isNotEmpty()) {
                 Text(stringResource(R.string.prueba_deshacer))
             }
-            Button(onClick = viewModel::comprobar, enabled = estado.seleccion.size == opciones.size) {
+            Button(onClick = acciones.comprobar, enabled = estado.seleccion.size == opciones.size) {
                 Text(stringResource(R.string.prueba_comprobar))
             }
         }
@@ -160,7 +170,7 @@ private fun SecuenciaVista(estado: PruebaServidorUiState.EnCurso, viewModel: Pru
 
 // Asociación: el estudiante toca una opción y luego su pareja; cada par queda unido. Al unirlas todas, comprueba.
 @Composable
-private fun AsociacionVista(estado: PruebaServidorUiState.EnCurso, viewModel: PruebaServidorViewModel) {
+private fun AsociacionVista(estado: PruebaServidorUiState.EnCurso, acciones: AccionesPregunta) {
     val opciones = estado.pregunta.opciones
     val pares = estado.seleccion.chunked(2).filter { it.size == 2 }
     val pendiente = if (estado.seleccion.size % 2 == 1) estado.seleccion.last() else null
@@ -181,7 +191,7 @@ private fun AsociacionVista(estado: PruebaServidorUiState.EnCurso, viewModel: Pr
     opciones.forEachIndexed { i, opcion ->
         if (i !in estado.seleccion) {
             OutlinedButton(
-                onClick = { viewModel.elegir(i) },
+                onClick = { acciones.elegir(i) },
                 enabled = !estado.corregida,
                 modifier = Modifier.fillMaxWidth().height(52.dp)
             ) { Text(opcion.texto, style = MaterialTheme.typography.titleMedium) }
@@ -189,10 +199,10 @@ private fun AsociacionVista(estado: PruebaServidorUiState.EnCurso, viewModel: Pr
     }
     if (!estado.corregida) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = viewModel::deshacer, enabled = estado.seleccion.isNotEmpty()) {
+            TextButton(onClick = acciones.deshacer, enabled = estado.seleccion.isNotEmpty()) {
                 Text(stringResource(R.string.prueba_deshacer))
             }
-            Button(onClick = viewModel::comprobar, enabled = estado.seleccion.size == opciones.size) {
+            Button(onClick = acciones.comprobar, enabled = estado.seleccion.size == opciones.size) {
                 Text(stringResource(R.string.prueba_comprobar))
             }
         }

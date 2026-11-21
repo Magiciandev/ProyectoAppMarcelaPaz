@@ -9,6 +9,7 @@ import com.example.mpazpro.data.remote.api.EvaluacionesApi
 import com.example.mpazpro.data.remote.api.ProgresoApi
 import com.example.mpazpro.data.remote.dto.IntentoSyncDto
 import com.example.mpazpro.data.remote.dto.PaqueteEvaluacionDto
+import com.example.mpazpro.data.remote.dto.PreguntaDto
 import com.example.mpazpro.data.remote.dto.RespuestaSyncDto
 import com.example.mpazpro.data.remote.dto.SyncRequestDto
 import com.example.mpazpro.data.remote.dto.SyncResponseDto
@@ -36,14 +37,19 @@ object MapeoPrueba {
         val resultado = mutableListOf<PreguntaPrueba>()
         for (enPrueba in prueba.preguntas.sortedBy { it.ordenEnPrueba ?: Int.MAX_VALUE }) {
             val dto = porId[enPrueba.preguntaId] ?: return null
-            val tipo = TipoPreguntaPrueba.desde(dto.tipo) ?: return null
-            val opciones = dto.opciones
-                .sortedBy { it.orden ?: Int.MAX_VALUE }
-                .map { OpcionPrueba(it.texto, it.esCorrecta == true, it.posicionCorrecta, it.parClave) }
-            if (tipo == TipoPreguntaPrueba.ASOCIACION && !asociacionBienArmada(opciones)) return null
-            resultado.add(PreguntaPrueba(dto.id, tipo, dto.enunciado, dto.explicacion, opciones, enPrueba.puntaje ?: 1.0))
+            resultado.add(aPregunta(dto, enPrueba.puntaje ?: 1.0) ?: return null)
         }
         return resultado
+    }
+
+    /** Una pregunta del servidor lista para resolver; null si es de un tipo que la app no resuelve o está mal armada. */
+    fun aPregunta(dto: PreguntaDto, puntaje: Double): PreguntaPrueba? {
+        val tipo = TipoPreguntaPrueba.desde(dto.tipo) ?: return null
+        val opciones = dto.opciones
+            .sortedBy { it.orden ?: Int.MAX_VALUE }
+            .map { OpcionPrueba(it.texto, it.esCorrecta == true, it.posicionCorrecta, it.parClave) }
+        if (tipo == TipoPreguntaPrueba.ASOCIACION && !asociacionBienArmada(opciones)) return null
+        return PreguntaPrueba(dto.id, tipo, dto.enunciado, dto.explicacion, opciones, puntaje)
     }
 
     // Una asociación se puede resolver solo si todas sus opciones forman parejas: cada clave aparece exactamente dos veces.

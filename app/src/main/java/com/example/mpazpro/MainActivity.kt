@@ -20,6 +20,7 @@ import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.AsignacionServidor
 import com.example.mpazpro.data.repository.AprobacionServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
+import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.ui.components.Notificaciones
@@ -73,7 +74,8 @@ class MainActivity : ComponentActivity() {
             ),
             catalogoRepository = catalogoRepository,
             sesionStore = sesion,
-            pruebaServidor = PruebaServidor(cliente.evaluaciones, cliente.progreso)
+            pruebaServidor = PruebaServidor(cliente.evaluaciones, cliente.progreso),
+            actividadesServidor = ActividadesServidor(cliente.evaluaciones)
         )
 
         Notificaciones.crearCanal(applicationContext)

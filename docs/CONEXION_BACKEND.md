@@ -53,6 +53,12 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
+Fase 6, paso 4d: **practicar las actividades** de una unidad del servidor. Desde el contenido, el botón «Practicar
+actividades» lista las actividades del objetivo (del paquete de evaluación) y el estudiante las resuelve pregunta a
+pregunta con corrección inmediata, usando los mismos tipos de pregunta de la prueba (selección, completación, secuencia y
+asociación). Es práctica libre: no usa los intentos de la prueba y por ahora no se envía al servidor (el avance llega en un
+paso siguiente). Una actividad con una pregunta que la app no resuelve se oculta completa.
+
 Fase 6, paso 4b: **rendir la prueba** de una unidad del servidor. La app pide la prueba (preguntas con su puntaje) y los
 intentos que el docente permite; el estudiante resuelve preguntas de selección, completación y secuencia, y al terminar
 la app envía el intento a `/progreso/sync`, que lo acepta o lo rechaza con un motivo (límite de intentos, fuera de fecha,
