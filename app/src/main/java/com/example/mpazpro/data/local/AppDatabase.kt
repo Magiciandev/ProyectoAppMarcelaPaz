@@ -16,7 +16,6 @@ import com.example.mpazpro.data.model.HistorialUnidad
 import com.example.mpazpro.data.model.Intento
 import com.example.mpazpro.data.model.IntentoPendiente
 import com.example.mpazpro.data.model.ItemCompletado
-import com.example.mpazpro.data.model.Observacion
 import com.example.mpazpro.data.model.Pregunta
 import com.example.mpazpro.data.model.Resultado
 import com.example.mpazpro.data.model.TotalesObjetivo
@@ -27,7 +26,7 @@ import com.example.mpazpro.data.model.Usuario
     entities = [
         Unidad::class, Usuario::class, HistorialUnidad::class,
         Pregunta::class, Resultado::class, Intento::class,
-        Asignacion::class, Configuracion::class, Observacion::class,
+        Asignacion::class, Configuracion::class,
         // v5: caché del catálogo que entrega el backend
         CacheAsignatura::class, CacheUnidad::class, CacheObjetivo::class, CacheContenido::class,
         // v7: avance del estudiante (ítems completados y totales por objetivo)
@@ -37,8 +36,8 @@ import com.example.mpazpro.data.model.Usuario
         // v9: asignaciones del estudiante y paquetes de evaluación para usar sin conexión
         CacheAsignacionEstudiante::class, CachePaquete::class
     ],
-    // v9: caché de evaluación sin conexión
-    version = 9,
+    // v10: se quitó la tabla local de observaciones (las observaciones viven en el servidor)
+    version = 10,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -49,7 +48,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun preguntaDao(): PreguntaDao
     abstract fun evaluacionDao(): EvaluacionDao
     abstract fun asignacionDao(): AsignacionDao
-    abstract fun informeDao(): InformeDao
     abstract fun catalogoCacheDao(): CatalogoCacheDao
     abstract fun avanceLocalDao(): AvanceLocalDao
     abstract fun intentoPendienteDao(): IntentoPendienteDao

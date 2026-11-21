@@ -24,7 +24,6 @@ import com.example.mpazpro.data.repository.AprobacionServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.EvaluacionRepository
-import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.data.repository.InformeServidor
 import com.example.mpazpro.data.repository.MonitoreoServidor
 import com.example.mpazpro.ui.components.Notificaciones
@@ -82,9 +81,6 @@ class MainActivity : ComponentActivity() {
             evaluacionRepository = EvaluacionRepository(baseDeDatos.preguntaDao(), baseDeDatos.evaluacionDao()),
             asignacionRepository = AsignacionRepository(
                 baseDeDatos.asignacionDao(), baseDeDatos.unidadDao(), AsignacionServidor(cliente.progreso, cacheEvaluacion)
-            ),
-            informeRepository = InformeRepository(
-                baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
             ),
             catalogoRepository = catalogoRepository,
             sesionStore = sesion,

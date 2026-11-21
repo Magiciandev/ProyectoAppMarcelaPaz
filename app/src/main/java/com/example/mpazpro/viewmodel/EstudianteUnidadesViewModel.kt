@@ -7,6 +7,8 @@ import com.example.mpazpro.data.model.Unidad
 import com.example.mpazpro.data.remote.dto.AsignacionEstudianteDto
 import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.AvanceServidor
+import com.example.mpazpro.data.repository.BandejaIntentos
+import com.example.mpazpro.data.model.PoliticaIntentos
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.UnidadRepository
 import com.example.mpazpro.data.repository.UsuarioRepository
@@ -41,7 +43,8 @@ class EstudianteUnidadesViewModel(
     evaluacionRepository: EvaluacionRepository,
     usuarioRepository: UsuarioRepository,
     private val asignacionRepository: AsignacionRepository,
-    private val avance: AvanceServidor
+    private val avance: AvanceServidor,
+    private val bandeja: BandejaIntentos
 ) : ViewModel() {
 
     private val estudianteId: Long = savedStateHandle.get<Long>("estudianteId") ?: -1L
@@ -61,10 +64,18 @@ class EstudianteUnidadesViewModel(
             _delServidor.value = asignacionRepository.misAsignacionesDelServidor(estudianteId)
                 .mapNotNull { asignacion ->
                     unidadRepository.buscarPorObjetivoServidor(asignacion.objetivoId)
-                        ?.let { UnidadEstudiante(it, null, asignacion) }
+                        ?.let { UnidadEstudiante(it, null, conPendientes(asignacion)) }
                 }
                 .sortedBy { it.unidad.asignatura }
         }
+    }
+
+    // Los intentos guardados en el teléfono sin enviar ya cuentan como usados (regla D7).
+    private suspend fun conPendientes(asignacion: AsignacionEstudianteDto): AsignacionEstudianteDto {
+        val pendientes = bandeja.pendientesDe(estudianteId, asignacion.objetivoId)
+        return asignacion.copy(
+            intentosUsados = PoliticaIntentos.usados(asignacion.intentosUsados.toInt(), pendientes).toLong()
+        )
     }
 
     // El curso del estudiante decide qué unidades locales se le muestran (publicadas, asignadas y en fecha).

@@ -11,7 +11,6 @@ import com.example.mpazpro.data.repository.AvanceServidor
 import com.example.mpazpro.data.repository.BandejaIntentos
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
-import com.example.mpazpro.data.repository.InformeRepository
 import com.example.mpazpro.data.repository.InformeServidor
 import com.example.mpazpro.data.repository.MonitoreoServidor
 import com.example.mpazpro.data.repository.PruebaServidor
@@ -26,7 +25,6 @@ class MpazViewModelFactory(
     private val usuarioRepository: UsuarioRepository,
     private val evaluacionRepository: EvaluacionRepository,
     private val asignacionRepository: AsignacionRepository,
-    private val informeRepository: InformeRepository,
     private val catalogoRepository: CatalogoRepository,
     private val sesionStore: SesionStore,
     private val pruebaServidor: PruebaServidor,
@@ -54,7 +52,7 @@ class MpazViewModelFactory(
             modelClass.isAssignableFrom(PreguntasEditorViewModel::class.java) ->
                 PreguntasEditorViewModel(handle, evaluacionRepository) as T
             modelClass.isAssignableFrom(EstudianteUnidadesViewModel::class.java) ->
-                EstudianteUnidadesViewModel(handle, unidadRepository, evaluacionRepository, usuarioRepository, asignacionRepository, avanceServidor) as T
+                EstudianteUnidadesViewModel(handle, unidadRepository, evaluacionRepository, usuarioRepository, asignacionRepository, avanceServidor, bandejaIntentos) as T
             modelClass.isAssignableFrom(EvaluacionViewModel::class.java) ->
                 EvaluacionViewModel(handle, evaluacionRepository, asignacionRepository) as T
             modelClass.isAssignableFrom(PruebaServidorViewModel::class.java) ->
