@@ -54,12 +54,13 @@ class AsignacionServidor(
     /** Estudiante: lo que le asignaron y está vigente (de su curso o individual), con los intentos que lleva usados. */
     suspend fun misAsignaciones(estudianteId: Long? = null): ResultadoRemoto<List<AsignacionEstudianteDto>> {
         val enLinea = llamarApi { api.misAsignaciones() }
-        if (cache == null || estudianteId == null) return enLinea
+        val guardado = cache
+        if (guardado == null || estudianteId == null) return enLinea
         return when (enLinea) {
             // Con conexión se guarda lo que entregó el servidor; sin conexión se usa lo último guardado.
-            is ResultadoRemoto.Ok -> enLinea.also { runCatching { cache.guardarAsignaciones(estudianteId, enLinea.valor) } }
+            is ResultadoRemoto.Ok -> enLinea.also { runCatching { guardado.guardarAsignaciones(estudianteId, enLinea.valor) } }
             is ResultadoRemoto.ErrorHttp -> enLinea
-            is ResultadoRemoto.SinConexion -> cache.asignaciones(estudianteId)
+            is ResultadoRemoto.SinConexion -> guardado.asignaciones(estudianteId)
                 .takeIf { it.isNotEmpty() }?.let { ResultadoRemoto.Ok(it) } ?: enLinea
         }
     }
