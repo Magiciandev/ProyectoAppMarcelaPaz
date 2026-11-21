@@ -126,6 +126,12 @@
     <string name="panel_informes">Informes de estudiantes</string>
     <string name="informes_titulo">Informes</string>
     <string name="informes_vacio">No hay estudiantes registrados.</string>
+    <string name="informes_reintentar">Reintentar</string>
+    <string name="informes_avance">Avance: %1$d %%</string>
+    <string name="informes_sin_avance">Avance: sin registro todavía</string>
+    <string name="informes_conexion">Última conexión: %1$s</string>
+    <string name="informes_sincronizacion">Última sincronización: %1$s</string>
+    <string name="informes_nunca">nunca</string>
     <string name="informe_titulo">Informe del estudiante</string>
     <string name="informe_general">Progreso general: %1$d %%</string>
     <string name="informe_aviso_umbrales">Niveles según umbrales provisorios (80 % y 60 %). Es una guía: la decisión es del docente.</string>

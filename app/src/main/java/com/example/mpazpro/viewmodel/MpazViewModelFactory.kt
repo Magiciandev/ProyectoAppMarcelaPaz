@@ -10,6 +10,7 @@ import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
+import com.example.mpazpro.data.repository.MonitoreoServidor
 import com.example.mpazpro.data.repository.PruebaServidor
 import com.example.mpazpro.data.repository.UnidadRepository
 import com.example.mpazpro.data.repository.UsuarioRepository
@@ -26,7 +27,8 @@ class MpazViewModelFactory(
     private val catalogoRepository: CatalogoRepository,
     private val sesionStore: SesionStore,
     private val pruebaServidor: PruebaServidor,
-    private val actividadesServidor: ActividadesServidor
+    private val actividadesServidor: ActividadesServidor,
+    private val monitoreoServidor: MonitoreoServidor
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -58,7 +60,7 @@ class MpazViewModelFactory(
             modelClass.isAssignableFrom(ContenidoViewModel::class.java) ->
                 ContenidoViewModel(handle, unidadRepository) as T
             modelClass.isAssignableFrom(InformesListaViewModel::class.java) ->
-                InformesListaViewModel(handle, informeRepository) as T
+                InformesListaViewModel(monitoreoServidor) as T
             modelClass.isAssignableFrom(InformeViewModel::class.java) ->
                 InformeViewModel(handle, informeRepository) as T
             modelClass.isAssignableFrom(CatalogoViewModel::class.java) ->
