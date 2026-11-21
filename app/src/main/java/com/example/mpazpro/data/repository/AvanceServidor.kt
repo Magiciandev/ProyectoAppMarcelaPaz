@@ -32,7 +32,9 @@ class AvanceServidor(
     private val dao: AvanceLocalDao,
     private val idsContenidos: suspend (Long) -> List<Long>,
     private val dificultadesActividades: suspend (Long) -> ResultadoRemoto<List<Int>>,
-    private val ahora: () -> Instant = { Instant.now() }
+    private val ahora: () -> Instant = { Instant.now() },
+    // Se llama cuando un envío falla y el avance sigue pendiente (para pedir un reintento con conexión).
+    private val alQuedarPendiente: () -> Unit = {}
 ) {
 
     /**
@@ -65,8 +67,11 @@ class AvanceServidor(
     }
 
     /** Envía lo anotado que siga valiendo. Sin nada que enviar responde Ok con ceros, sin llamar a /sync. */
-    suspend fun sincronizar(usuarioId: Long): ResultadoRemoto<ResumenEnvioAvance> =
-        llamarApi { enviar(usuarioId) }
+    suspend fun sincronizar(usuarioId: Long): ResultadoRemoto<ResumenEnvioAvance> {
+        val resultado = llamarApi { enviar(usuarioId) }
+        if (resultado !is ResultadoRemoto.Ok) alQuedarPendiente()
+        return resultado
+    }
 
     private suspend fun enviar(usuarioId: Long): ResumenEnvioAvance {
         val reinicio = instanteDe(api.miAvance().ultimoReinicio)

@@ -216,4 +216,24 @@ class BandejaIntentosTest {
         assertEquals("a", conRed.lotes.single().intentos.single().uuid)
         assertTrue(dao.filas.isEmpty())
     }
+
+    @Test fun avisa_cuando_el_envio_falla_y_queda_pendiente() = runBlocking {
+        var avisos = 0
+        val b = BandejaIntentos(ProgresoFalso(error = IOException("sin red")), DaoFalso(), alQuedarPendiente = { avisos++ })
+        b.guardar(usuario, intento("a"))
+
+        b.enviar(usuario)
+
+        assertEquals(1, avisos)
+    }
+
+    @Test fun no_avisa_cuando_el_envio_resulta_bien() = runBlocking {
+        var avisos = 0
+        val b = BandejaIntentos(ProgresoFalso(), DaoFalso(), alQuedarPendiente = { avisos++ })
+        b.guardar(usuario, intento("a"))
+
+        b.enviar(usuario)
+
+        assertEquals(0, avisos)
+    }
 }

@@ -317,4 +317,30 @@ class AvanceServidorTest {
         assertEquals(25, porObjetivo[1]!!.porcentajeAvance)
         assertEquals(100, porObjetivo[3]!!.porcentajeAvance)
     }
+
+    @Test fun avisa_cuando_el_envio_falla_y_el_avance_queda_pendiente() = runBlocking {
+        var avisos = 0
+        val s = AvanceServidor(
+            api = ProgresoFalso(errorDeRed = IOException("sin red")), dao = DaoFalso(),
+            idsContenidos = { listOf(50L) }, dificultadesActividades = { ResultadoRemoto.Ok(listOf(1, 2, 3)) },
+            ahora = { reloj }, alQuedarPendiente = { avisos++ }
+        )
+
+        s.actividadCompletada(usuario, objetivo, 7, 1, listOf(1, 2, 3))
+
+        assertEquals(1, avisos)
+    }
+
+    @Test fun no_avisa_cuando_el_avance_se_envia_bien() = runBlocking {
+        var avisos = 0
+        val s = AvanceServidor(
+            api = ProgresoFalso(), dao = DaoFalso(),
+            idsContenidos = { listOf(50L) }, dificultadesActividades = { ResultadoRemoto.Ok(listOf(1, 2, 3)) },
+            ahora = { reloj }, alQuedarPendiente = { avisos++ }
+        )
+
+        s.actividadCompletada(usuario, objetivo, 7, 1, listOf(1, 2, 3))
+
+        assertEquals(0, avisos)
+    }
 }

@@ -20,7 +20,9 @@ class BandejaIntentos(
     private val api: ProgresoApi,
     private val dao: IntentoPendienteDao,
     private val ahora: () -> Instant = { Instant.now() },
-    private val gson: Gson = Gson()
+    private val gson: Gson = Gson(),
+    // Se llama cuando un envío falla y los intentos siguen pendientes (para pedir un reintento con conexión).
+    private val alQuedarPendiente: () -> Unit = {}
 ) {
 
     /** Guarda el intento antes de enviarlo. Repetir el mismo uuid no lo duplica. */
@@ -49,14 +51,19 @@ class BandejaIntentos(
         if (pendientes.isEmpty()) return ResultadoRemoto.Ok(emptyMap())
         val intentos = pendientes.map { gson.fromJson(it.intentoJson, IntentoSyncDto::class.java) }
         val uuidsPendientes = pendientes.map { it.uuid }.toSet()
-        return llamarApi {
+        return conAviso(llamarApi {
             val respuesta = api.sincronizar(SyncRequestDto(enviadoEn = ahora().toString(), intentos = intentos))
             val definitivos = respuesta.intentos
                 .filter { it.uuid != null && it.uuid in uuidsPendientes && it.resultado in DEFINITIVOS }
                 .associateBy { it.uuid!! }
             if (definitivos.isNotEmpty()) dao.borrar(definitivos.keys.toList())
             definitivos
-        }
+        })
+    }
+
+    private fun <T> conAviso(resultado: ResultadoRemoto<T>): ResultadoRemoto<T> {
+        if (resultado !is ResultadoRemoto.Ok) alQuedarPendiente()
+        return resultado
     }
 
     private fun fechaEnMillis(texto: String): Long =
