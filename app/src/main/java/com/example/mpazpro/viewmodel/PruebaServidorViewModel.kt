@@ -59,6 +59,10 @@ class PruebaServidorViewModel(
     private var prueba: PruebaParaRendir? = null
     private var sesion: SesionPrueba? = null
 
+    // Cuándo empezó el estudiante. Es la fecha del intento: si empieza el último día a las 23:58 y termina a las 00:03,
+    // el servidor lo acepta, porque mira el día en que se rindió y no el día en que se envió.
+    private var inicio: Instant? = null
+
     // Se arma una sola vez al terminar. Si el envío falla, «Reintentar» manda el mismo lote (mismos uuid).
     private var solicitud: SyncRequestDto? = null
 
@@ -81,6 +85,8 @@ class PruebaServidorViewModel(
 
     private fun alCargar(carga: CargaPrueba): PruebaServidorUiState = when (carga) {
         is CargaPrueba.SinAsignacion -> PruebaServidorUiState.Mensaje(MensajesPrueba.SIN_ASIGNACION)
+        is CargaPrueba.AunNoDisponible -> PruebaServidorUiState.Mensaje(MensajesPrueba.aunNoDisponible(carga.desde))
+        is CargaPrueba.YaCerrada -> PruebaServidorUiState.Mensaje(MensajesPrueba.yaCerrada(carga.hasta))
         is CargaPrueba.SinPrueba -> PruebaServidorUiState.Mensaje(MensajesPrueba.SIN_PRUEBA)
         is CargaPrueba.NoSoportada -> PruebaServidorUiState.Mensaje(MensajesPrueba.NO_SOPORTADA)
         is CargaPrueba.Lista -> {
@@ -90,6 +96,7 @@ class PruebaServidorViewModel(
             } else {
                 val nueva = SesionPrueba(carga.prueba.preguntas)
                 sesion = nueva
+                inicio = Instant.now()
                 enCurso(nueva)
             }
         }
@@ -127,7 +134,7 @@ class PruebaServidorViewModel(
         val s = sesion ?: return
         val lote = solicitud ?: ConstructorIntento.armar(
             prueba = p, numeroIntento = p.intentosUsados + 1, respuestas = s.respuestasDadas(),
-            fechaHora = Instant.now(), nuevoUuid = { UUID.randomUUID().toString() }
+            fechaHora = inicio ?: Instant.now(), nuevoUuid = { UUID.randomUUID().toString() }
         ).also { solicitud = it }
         _uiState.value = PruebaServidorUiState.Enviando
         viewModelScope.launch {

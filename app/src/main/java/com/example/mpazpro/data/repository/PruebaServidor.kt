@@ -1,12 +1,16 @@
 package com.example.mpazpro.data.repository
 
+import com.example.mpazpro.data.model.DisponibilidadPrueba
 import com.example.mpazpro.data.model.OpcionPrueba
 import com.example.mpazpro.data.model.PreguntaPrueba
 import com.example.mpazpro.data.model.PruebaParaRendir
 import com.example.mpazpro.data.model.TipoPreguntaPrueba
+import com.example.mpazpro.data.model.VentanaPrueba
+import com.example.mpazpro.data.model.ZonaColegio
 import com.example.mpazpro.data.remote.ResultadoRemoto
 import com.example.mpazpro.data.remote.api.EvaluacionesApi
 import com.example.mpazpro.data.remote.api.ProgresoApi
+import com.example.mpazpro.data.remote.dto.AsignacionEstudianteDto
 import com.example.mpazpro.data.remote.dto.IntentoSyncDto
 import com.example.mpazpro.data.remote.dto.PaqueteEvaluacionDto
 import com.example.mpazpro.data.remote.dto.PreguntaDto
@@ -15,11 +19,15 @@ import com.example.mpazpro.data.remote.dto.SyncRequestDto
 import com.example.mpazpro.data.remote.dto.SyncResponseDto
 import com.example.mpazpro.data.remote.llamarApi
 import java.time.Instant
+import java.time.LocalDate
 
 // Qué se encontró al pedir la prueba de un objetivo.
 sealed interface CargaPrueba {
     data class Lista(val prueba: PruebaParaRendir) : CargaPrueba
     object SinAsignacion : CargaPrueba
+    // La asignación existe, pero hoy (en la zona del colegio) cae fuera de la ventana en que se puede rendir.
+    data class AunNoDisponible(val desde: LocalDate) : CargaPrueba
+    data class YaCerrada(val hasta: LocalDate) : CargaPrueba
     object SinPrueba : CargaPrueba
     object NoSoportada : CargaPrueba
 }
@@ -98,7 +106,12 @@ object ConstructorIntento {
  * Rendir la prueba de un objetivo contra el servidor: pide la prueba (ms-actividades-evaluaciones) y la asignación
  * del estudiante (ms-progreso) y, al terminar, envía el intento a /progreso/sync, que lo acepta o lo rechaza con un motivo.
  */
-class PruebaServidor(private val evaluaciones: EvaluacionesApi, private val progreso: ProgresoApi) {
+class PruebaServidor(
+    private val evaluaciones: EvaluacionesApi,
+    private val progreso: ProgresoApi,
+    // Qué día es hoy en el colegio; las pruebas lo reemplazan por una fecha fija.
+    private val hoy: () -> LocalDate = { ZonaColegio.hoy() }
+) {
 
     suspend fun cargar(objetivoId: Long): ResultadoRemoto<CargaPrueba> =
         llamarApi { cargarEnServidor(objetivoId) }
@@ -110,6 +123,12 @@ class PruebaServidor(private val evaluaciones: EvaluacionesApi, private val prog
     private suspend fun cargarEnServidor(objetivoId: Long): CargaPrueba {
         val asignacion = progreso.misAsignaciones().firstOrNull { it.objetivoId == objetivoId }
             ?: return CargaPrueba.SinAsignacion
+        // Se avisa antes de bajar la prueba, no al final: el servidor rechazaría el intento con FUERA_DE_FECHA.
+        when (val ventana = disponibilidad(asignacion, hoy())) {
+            is DisponibilidadPrueba.AunNoDisponible -> return CargaPrueba.AunNoDisponible(ventana.desde)
+            is DisponibilidadPrueba.YaCerrada -> return CargaPrueba.YaCerrada(ventana.hasta)
+            DisponibilidadPrueba.EnFecha -> Unit
+        }
         val paquete = evaluaciones.paquete(objetivoId)
         val prueba = paquete.prueba ?: return CargaPrueba.SinPrueba
         val preguntas = MapeoPrueba.aPreguntas(paquete) ?: return CargaPrueba.NoSoportada
@@ -125,4 +144,15 @@ class PruebaServidor(private val evaluaciones: EvaluacionesApi, private val prog
             )
         )
     }
+
+    // Una fecha que no se pueda leer no bloquea: en ese caso decide el servidor, que es quien tiene la última palabra.
+    private fun disponibilidad(a: AsignacionEstudianteDto, hoy: LocalDate): DisponibilidadPrueba {
+        val desde = fecha(a.fechaDesde)
+        val hasta = fecha(a.fechaHasta)
+        if (desde == null || hasta == null) return DisponibilidadPrueba.EnFecha
+        return VentanaPrueba.evaluar(desde, hasta, fecha(a.fechaHabilitacion), fecha(a.fechaRendicion), hoy)
+    }
+
+    private fun fecha(texto: String?): LocalDate? =
+        texto?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 }

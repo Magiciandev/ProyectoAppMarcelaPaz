@@ -36,6 +36,7 @@ import com.example.mpazpro.data.remote.dto.SyncResponseDto
 import com.example.mpazpro.data.remote.dto.ValidacionRequestDto
 import java.io.IOException
 import java.time.Instant
+import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -199,8 +200,14 @@ class PruebaServidorTest {
         limiteIntentos = limite, intentosUsados = usados
     )
 
+    // Hoy fijo (20-11-2026) para que las pruebas no dependan del reloj real.
+    private val HOY = LocalDate.of(2026, 11, 20)
+
+    private fun servidorCon(paquete: PaqueteEvaluacionDto, asignaciones: List<AsignacionEstudianteDto>, hoy: LocalDate = HOY) =
+        PruebaServidor(EvaluacionesFalso(paquete), ProgresoFalso(asignaciones), hoy = { hoy })
+
     @Test fun carga_la_prueba_con_el_limite_y_los_intentos_del_servidor() = runBlocking {
-        val servidor = PruebaServidor(EvaluacionesFalso(paquete(listOf(p1, p2, p3), enPruebaNormal)), ProgresoFalso(listOf(asignada())))
+        val servidor = servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), listOf(asignada()))
 
         val r = servidor.cargar(1)
 
@@ -215,7 +222,7 @@ class PruebaServidorTest {
     }
 
     @Test fun sin_asignacion_no_se_puede_rendir() = runBlocking {
-        val servidor = PruebaServidor(EvaluacionesFalso(paquete(listOf(p1), enPruebaNormal)), ProgresoFalso(listOf(asignada(objetivoId = 99))))
+        val servidor = servidorCon(paquete(listOf(p1), enPruebaNormal), listOf(asignada(objetivoId = 99)))
 
         val r = servidor.cargar(1)
 
@@ -226,8 +233,8 @@ class PruebaServidorTest {
         val sinPrueba = PaqueteEvaluacionDto(objetivoId = 1, preguntas = listOf(p1), prueba = null)
         val conAsociacion = paquete(listOf(p1, p4), listOf(PreguntaEnPruebaDto(1, 1, 1.0), PreguntaEnPruebaDto(4, 2, 1.0)))
 
-        val a = PruebaServidor(EvaluacionesFalso(sinPrueba), ProgresoFalso(listOf(asignada()))).cargar(1)
-        val b = PruebaServidor(EvaluacionesFalso(conAsociacion), ProgresoFalso(listOf(asignada()))).cargar(1)
+        val a = servidorCon(sinPrueba, listOf(asignada())).cargar(1)
+        val b = servidorCon(conAsociacion, listOf(asignada())).cargar(1)
 
         assertTrue((a as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.SinPrueba)
         assertTrue((b as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.NoSoportada)
@@ -243,6 +250,42 @@ class PruebaServidorTest {
         assertEquals("ACEPTADO", (r as ResultadoRemoto.Ok<SyncResponseDto>).valor.intentos.single().resultado)
         assertNotNull(progreso.enviado)
         assertEquals(lote, progreso.enviado)
+    }
+
+    // ---- fuera de fecha: se avisa al empezar, no al final
+    private fun asignadaConFechas(desde: String, hasta: String, habilitacion: String? = null, rendicion: String? = null) =
+        AsignacionEstudianteDto(
+            asignacionId = 5, objetivoId = 1, fechaDesde = desde, fechaHasta = hasta, limiteIntentos = 3,
+            fechaHabilitacion = habilitacion, fechaRendicion = rendicion, intentosUsados = 0
+        )
+
+    private suspend fun cargaCon(asignacion: AsignacionEstudianteDto): CargaPrueba =
+        (servidorCon(paquete(listOf(p1), enPruebaNormal), listOf(asignacion)).cargar(1) as ResultadoRemoto.Ok<CargaPrueba>).valor
+
+    @Test fun antes_de_la_habilitacion_de_la_prueba_se_avisa_cuando_se_abre() = runBlocking {
+        // La asignación ya empezó, pero la docente habilitó la prueba para el 25-11.
+        val r = cargaCon(asignadaConFechas("2026-11-01", "2026-12-31", habilitacion = "2026-11-25"))
+
+        assertEquals(CargaPrueba.AunNoDisponible(LocalDate.of(2026, 11, 25)), r)
+    }
+
+    @Test fun despues_de_la_rendicion_de_la_prueba_se_avisa_que_ya_cerro() = runBlocking {
+        // La asignación sigue vigente hasta fin de año, pero la prueba se podía rendir hasta el 15-11.
+        val r = cargaCon(asignadaConFechas("2026-11-01", "2026-12-31", rendicion = "2026-11-15"))
+
+        assertEquals(CargaPrueba.YaCerrada(LocalDate.of(2026, 11, 15)), r)
+    }
+
+    @Test fun el_ultimo_dia_de_la_ventana_todavia_se_puede_rendir() = runBlocking {
+        val r = cargaCon(asignadaConFechas("2026-11-01", "2026-12-31", rendicion = "2026-11-20"))
+
+        assertTrue(r is CargaPrueba.Lista)
+    }
+
+    @Test fun una_fecha_ilegible_no_bloquea_y_decide_el_servidor() = runBlocking {
+        val r = cargaCon(asignadaConFechas("no-es-fecha", "2026-12-31"))
+
+        assertTrue(r is CargaPrueba.Lista)
     }
 
     @Test fun sin_red_el_envio_informa_sin_conexion_y_el_lote_se_puede_reintentar() = runBlocking {

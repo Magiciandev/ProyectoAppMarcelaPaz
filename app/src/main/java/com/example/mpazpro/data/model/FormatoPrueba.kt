@@ -1,5 +1,7 @@
 package com.example.mpazpro.data.model
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // Formatos y mensajes de la prueba del servidor, como funciones puras para poder probarlos.
@@ -17,6 +19,12 @@ object MensajesPrueba {
     const val SIN_PRUEBA = "Esta unidad todavía no tiene prueba."
     const val NO_SOPORTADA = "Esta prueba tiene preguntas que todavía no se pueden resolver en la app."
     const val SIN_UNIDAD = "No se encontró la unidad en el servidor."
+
+    private val FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    fun aunNoDisponible(desde: LocalDate) = "La prueba se abre el ${desde.format(FORMATO_FECHA)}. Vuelve ese día."
+
+    fun yaCerrada(hasta: LocalDate) = "El plazo para rendir esta prueba terminó el ${hasta.format(FORMATO_FECHA)}. Habla con tu profesora o profesor."
 
     fun bloqueada(limite: Int) = "Ya usaste tus $limite intentos. Habla con tu profesora o profesor."
 
