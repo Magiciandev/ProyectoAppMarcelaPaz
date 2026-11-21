@@ -1,28 +1,23 @@
 package com.example.mpazpro.ui.screens
 
-import com.example.mpazpro.ui.components.EstadoCarga
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -40,30 +35,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import android.Manifest
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mpazpro.R
-import com.example.mpazpro.data.model.CalculoProgreso
-import com.example.mpazpro.data.model.DetalleUnidad
-import com.example.mpazpro.data.model.InformeEstudiante
-import com.example.mpazpro.ui.components.AsignaturaChip
+import com.example.mpazpro.data.model.FichaEstudiante
+import com.example.mpazpro.data.model.InformeFicha
+import com.example.mpazpro.data.model.Nivel
+import com.example.mpazpro.data.model.ObjetivoFicha
 import com.example.mpazpro.ui.components.CampoValidado
+import com.example.mpazpro.ui.components.EstadoCarga
 import com.example.mpazpro.ui.components.Notificaciones
 import com.example.mpazpro.ui.components.ScaffoldConVolver
-import com.example.mpazpro.ui.components.colorTizaDe
 import com.example.mpazpro.viewmodel.AccionUiState
 import com.example.mpazpro.viewmodel.InformeUiState
 import com.example.mpazpro.viewmodel.InformeViewModel
-import com.example.mpazpro.viewmodel.TipoReinicio
 import com.example.mpazpro.viewmodel.validation.ValidadorObservacion
 
-// Informe reservado al docente: % por asignatura, desglose, observación, reinicio y avisos.
+// Informe reservado al docente, con datos del servidor: resumen por objetivo, informe, observación, validación y reinicio.
 @Composable
 fun InformeScreen(viewModel: InformeViewModel, onVolver: () -> Unit) {
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
     val borrador by viewModel.borrador.collectAsStateWithLifecycle()
     val errorObs by viewModel.errorObservacion.collectAsStateWithLifecycle()
-    val pendiente by viewModel.pendiente.collectAsStateWithLifecycle()
+    val reinicioPendiente by viewModel.reinicioPendiente.collectAsStateWithLifecycle()
     val accion by viewModel.accion.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
@@ -87,12 +80,11 @@ fun InformeScreen(viewModel: InformeViewModel, onVolver: () -> Unit) {
         }
     }
 
-    pendiente?.let { p ->
-        val que = stringResource(if (p.tipo == TipoReinicio.PROGRESO) R.string.reinicio_progreso else R.string.reinicio_intentos)
+    if (reinicioPendiente) {
         AlertDialog(
             onDismissRequest = viewModel::cancelarReinicio,
             title = { Text(stringResource(R.string.reinicio_confirmar_titulo)) },
-            text = { Text(stringResource(R.string.reinicio_confirmar_texto, que.lowercase(), p.asignatura ?: stringResource(R.string.reinicio_todo))) },
+            text = { Text(stringResource(R.string.reinicio_servidor_texto)) },
             confirmButton = { TextButton(onClick = viewModel::confirmarReinicio) { Text(stringResource(R.string.reinicio_si)) } },
             dismissButton = { TextButton(onClick = viewModel::cancelarReinicio) { Text(stringResource(R.string.asignar_cancelar)) } }
         )
@@ -102,49 +94,54 @@ fun InformeScreen(viewModel: InformeViewModel, onVolver: () -> Unit) {
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
             when (val e = estado) {
                 is InformeUiState.Cargando -> EstadoCarga()
-                is InformeUiState.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(24.dp))
+                is InformeUiState.Error -> Column(
+                    Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(e.mensaje, color = MaterialTheme.colorScheme.error)
+                    Button(onClick = viewModel::cargar) { Text(stringResource(R.string.informes_reintentar)) }
+                }
                 is InformeUiState.Listo -> Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Cabecera(e.informe)
+                    Cabecera(e.ficha)
                     if (Notificaciones.requierePermisoEnEjecucion() && !avisosActivos) {
                         OutlinedButton(
                             onClick = { lanzador.launch(Manifest.permission.POST_NOTIFICATIONS) },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.notif_activar)) }
                     }
-                    e.informe.porAsignatura.forEach { r ->
-                        val tiene = e.informe.detalle.any { it.asignatura == r.asignatura }
-                        FilaAsignatura(
-                            asignatura = r.asignatura, porcentaje = r.porcentaje, tieneEvaluaciones = tiene,
-                            onReiniciarProgreso = { viewModel.pedirReinicio(TipoReinicio.PROGRESO, r.asignatura) },
-                            onReiniciarIntentos = { viewModel.pedirReinicio(TipoReinicio.INTENTOS, r.asignatura) }
+                    if (e.ficha.objetivos.isEmpty()) Text(stringResource(R.string.informe_sin_objetivos))
+                    e.ficha.objetivos.forEach { TarjetaObjetivo(it) }
+                    HorizontalDivider()
+                    SeccionInforme(e.ficha.informe)
+                    Button(onClick = viewModel::generarInforme, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(if (e.ficha.informe == null) R.string.informe_generar else R.string.informe_generar_nuevo))
+                    }
+                    if (e.ficha.informe != null) {
+                        CampoValidado(
+                            valor = borrador ?: e.ficha.informe.observacion,
+                            onValorChange = viewModel::onObservacion,
+                            etiqueta = stringResource(R.string.observacion_etiqueta),
+                            iconoInicial = Icons.Filled.Info,
+                            error = errorObs,
+                            maxCaracteres = ValidadorObservacion.MAXIMO,
+                            minLineas = 3
                         )
+                        Button(onClick = viewModel::guardarObservacion, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.observacion_guardar))
+                        }
+                        OutlinedButton(
+                            onClick = viewModel::validarInforme,
+                            enabled = !e.ficha.informe.validado,
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.informe_validar)) }
                     }
                     HorizontalDivider()
-                    Text(stringResource(R.string.informe_detalle), style = MaterialTheme.typography.titleLarge)
-                    if (e.informe.detalle.isEmpty()) Text(stringResource(R.string.informe_sin_evaluaciones))
-                    e.informe.detalle.forEach { DetalleCard(it) }
-                    HorizontalDivider()
-                    CampoValidado(
-                        valor = borrador ?: e.informe.observacion,
-                        onValorChange = viewModel::onObservacion,
-                        etiqueta = stringResource(R.string.observacion_etiqueta),
-                        iconoInicial = Icons.Filled.Info,
-                        error = errorObs,
-                        maxCaracteres = ValidadorObservacion.MAXIMO,
-                        minLineas = 3
-                    )
-                    Button(onClick = viewModel::guardarObservacion, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.observacion_guardar))
-                    }
-                    HorizontalDivider()
-                    OutlinedButton(onClick = { viewModel.pedirReinicio(TipoReinicio.PROGRESO, null) }, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.reinicio_progreso_todo))
-                    }
-                    OutlinedButton(onClick = { viewModel.pedirReinicio(TipoReinicio.INTENTOS, null) }, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.reinicio_intentos_todo))
+                    OutlinedButton(onClick = viewModel::pedirReinicio, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.reinicio_servidor))
                     }
                 }
             }
@@ -153,66 +150,61 @@ fun InformeScreen(viewModel: InformeViewModel, onVolver: () -> Unit) {
 }
 
 @Composable
-private fun Cabecera(informe: InformeEstudiante) {
-    val progreso by animateFloatAsState(informe.general / 100f, label = "progresoGeneral")
+private fun Cabecera(ficha: FichaEstudiante) {
+    val general = ficha.promedioGeneral
+    val progreso by animateFloatAsState((general ?: 0) / 100f, label = "progresoGeneral")
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(informe.estudiante.nombre, style = MaterialTheme.typography.headlineMedium)
-        Text(informe.estudiante.curso.orEmpty(), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(stringResource(R.string.informe_general, informe.general), style = MaterialTheme.typography.titleLarge)
+        Text(ficha.nombre, style = MaterialTheme.typography.headlineMedium)
+        Text(
+            if (general != null) stringResource(R.string.informe_general, general) else stringResource(R.string.informe_sin_pruebas),
+            style = MaterialTheme.typography.titleLarge
+        )
         LinearProgressIndicator(progress = { progreso }, modifier = Modifier.fillMaxWidth())
+        ficha.nivelGeneral?.let { Text(it.etiqueta, style = MaterialTheme.typography.bodyMedium) }
         Text(stringResource(R.string.informe_aviso_umbrales), style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-private fun FilaAsignatura(
-    asignatura: String, porcentaje: Int, tieneEvaluaciones: Boolean,
-    onReiniciarProgreso: () -> Unit, onReiniciarIntentos: () -> Unit
-) {
-    val progreso by animateFloatAsState(porcentaje / 100f, label = "progresoAsignatura")
+private fun TarjetaObjetivo(o: ObjetivoFicha) {
+    val progreso by animateFloatAsState(o.avance / 100f, label = "avanceObjetivo")
     Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()) {
-                AsignaturaChip(asignatura, colorTizaDe(asignatura))
-                Text("$porcentaje %", style = MaterialTheme.typography.titleLarge)
-            }
-            LinearProgressIndicator(progress = { progreso }, color = colorTizaDe(asignatura), modifier = Modifier.fillMaxWidth())
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(o.nombre, style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.informes_avance, o.avance))
+            LinearProgressIndicator(progress = { progreso }, modifier = Modifier.fillMaxWidth())
+            Text(stringResource(R.string.informe_intentos, o.intentosAceptados.toInt(), o.limiteIntentos))
             Text(
-                if (tieneEvaluaciones) CalculoProgreso.nivel(porcentaje).etiqueta else stringResource(R.string.informe_sin_evaluar),
+                if (o.mejorPorcentaje != null) {
+                    stringResource(R.string.informe_mejor, o.mejorPorcentaje, (o.nivel ?: Nivel.REFUERZO).etiqueta)
+                } else {
+                    stringResource(R.string.informe_sin_evaluar)
+                },
                 style = MaterialTheme.typography.bodyMedium
             )
-            Row {
-                TextButton(onClick = onReiniciarProgreso) { Text(stringResource(R.string.reinicio_progreso)) }
-                TextButton(onClick = onReiniciarIntentos) { Text(stringResource(R.string.reinicio_intentos)) }
-            }
         }
     }
 }
 
 @Composable
-private fun DetalleCard(d: DetalleUnidad) {
+private fun SeccionInforme(informe: InformeFicha?) {
+    Text(stringResource(R.string.informe_seccion), style = MaterialTheme.typography.titleLarge)
+    if (informe == null) {
+        Text(stringResource(R.string.informe_sin_informe))
+        return
+    }
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("${d.titulo} · ${d.porcentaje} %", style = MaterialTheme.typography.titleMedium)
-            d.desglose.forEach { p ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(
-                        if (p.acierto) Icons.Filled.Check else Icons.Filled.Close,
-                        contentDescription = stringResource(if (p.acierto) R.string.informe_acierto else R.string.informe_error),
-                        tint = if (p.acierto) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                    )
-                    Column {
-                        Text(p.texto)
-                        Text(
-                            stringResource(R.string.informe_respondio, p.elegida ?: "—") +
-                                if (p.acierto) "" else " · " + stringResource(R.string.informe_correcta, p.correcta),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+            Text(stringResource(R.string.informe_emitido, informe.emitidoEn), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.informe_puntaje, informe.puntajeGlobal, informe.nivel?.etiqueta ?: "—"))
+            Text(stringResource(if (informe.validado) R.string.informe_validado else R.string.informe_pendiente_validar))
+            if (informe.areasDeRefuerzo.isNotEmpty()) {
+                Text(stringResource(R.string.informe_refuerzo, informe.areasDeRefuerzo.joinToString(", ")))
+            }
+            informe.respuestas.forEach {
+                Text(stringResource(R.string.informe_respuestas, it.nombre, it.correctas, it.total),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

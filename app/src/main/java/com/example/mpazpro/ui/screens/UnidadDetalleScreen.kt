@@ -28,7 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.mpazpro.R
+import com.example.mpazpro.data.model.AccionEstado
 import com.example.mpazpro.data.model.EstadoUnidad
+import com.example.mpazpro.data.model.TransicionesUnidad
 import com.example.mpazpro.ui.components.AsignaturaChip
 import com.example.mpazpro.ui.components.ImagenApoyo
 import com.example.mpazpro.ui.components.ScaffoldConVolver
@@ -77,16 +79,15 @@ fun UnidadDetalleScreen(
                         Text(unidad.contenido, style = MaterialTheme.typography.bodyLarge)
 
                         if (editable) {
-                            when (unidad.estado) {
-                                EstadoUnidad.BORRADOR -> BotonAccion(stringResource(R.string.detalle_enviar), viewModel::enviarARevision)
-                                EstadoUnidad.EN_REVISION -> {
-                                    BotonAccion(stringResource(R.string.detalle_aprobar), viewModel::aprobar)
-                                    OutlinedButton(onClick = viewModel::rechazar, modifier = Modifier.fillMaxWidth()) {
-                                        Text(stringResource(R.string.detalle_rechazar))
+                            // Los botones salen del estado actual: cada estado ofrece solo sus acciones.
+                            TransicionesUnidad.accionesDesde(unidad.estado).forEach { accion ->
+                                val texto = stringResource(textoDeAccion(accion))
+                                if (accion.principal) {
+                                    BotonAccion(texto) { viewModel.ejecutar(accion) }
+                                } else {
+                                    OutlinedButton(onClick = { viewModel.ejecutar(accion) }, modifier = Modifier.fillMaxWidth()) {
+                                        Text(texto)
                                     }
-                                }
-                                else -> OutlinedButton(onClick = viewModel::deshabilitar, modifier = Modifier.fillMaxWidth()) {
-                                    Text(stringResource(R.string.detalle_deshabilitar))
                                 }
                             }
                             OutlinedButton(onClick = { onEditarPreguntas(unidad.id) }, modifier = Modifier.fillMaxWidth()) {
@@ -96,7 +97,7 @@ fun UnidadDetalleScreen(
                                 onClick = { selector.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                                 modifier = Modifier.fillMaxWidth()
                             ) { Text(stringResource(R.string.detalle_imagen)) }
-                        } else if (unidad.estado == EstadoUnidad.PUBLICADO) {
+                        } else if (TransicionesUnidad.docentePuedeAsignar(unidad)) {
                             // Docente: solo puede asignar unidades ya publicadas por UTP.
                             BotonAccion(stringResource(R.string.detalle_asignar)) { onAsignar(unidad.id) }
                         }
@@ -112,6 +113,16 @@ fun UnidadDetalleScreen(
             }
         }
     }
+}
+
+// Texto del botón de cada acción de estado.
+private fun textoDeAccion(accion: AccionEstado): Int = when (accion) {
+    AccionEstado.ENVIAR_REVISION -> R.string.detalle_enviar
+    AccionEstado.AUTORIZAR -> R.string.detalle_autorizar
+    AccionEstado.RECHAZAR -> R.string.detalle_rechazar
+    AccionEstado.PUBLICAR -> R.string.detalle_publicar
+    AccionEstado.DESHABILITAR -> R.string.detalle_deshabilitar
+    AccionEstado.REABRIR -> R.string.detalle_reabrir
 }
 
 @Composable

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="contenido_practicar">Practicar actividades</string>
+    <string name="actividades_titulo">Actividades</string>
+    <string name="actividades_elegir">Elige una actividad para practicar. Es práctica libre: no usa los intentos de tu prueba.</string>
+    <string name="actividad_detalle">Preguntas: %1$d · Dificultad: %2$d</string>
+    <string name="actividad_resultado">Acertaste %1$d de %2$d</string>
+    <string name="actividad_otra">Elegir otra actividad</string>
+</resources>

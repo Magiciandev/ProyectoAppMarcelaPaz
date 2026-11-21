@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +32,13 @@ import com.example.mpazpro.viewmodel.ContenidoViewModel
 
 // Estudiante: lee el contenido de la unidad (con su imagen de apoyo) y pasa a la prueba.
 @Composable
-fun ContenidoScreen(viewModel: ContenidoViewModel, onRendir: () -> Unit, onVolver: () -> Unit) {
+fun ContenidoScreen(
+    viewModel: ContenidoViewModel,
+    onRendir: () -> Unit,
+    onRendirServidor: () -> Unit,
+    onPracticar: () -> Unit,
+    onVolver: () -> Unit
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ScaffoldConVolver(titulo = stringResource(R.string.contenido_titulo), onVolver = onVolver) { padding ->
@@ -50,7 +57,15 @@ fun ContenidoScreen(viewModel: ContenidoViewModel, onRendir: () -> Unit, onVolve
                         AsignaturaChip(nombre = u.asignatura, colorTiza = colorTizaDe(u.asignatura))
                         ImagenApoyo(ruta = u.imagenRuta, descripcion = stringResource(R.string.imagen_desc, u.titulo))
                         Text(u.contenido, style = MaterialTheme.typography.bodyLarge)
-                        Button(onClick = onRendir, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                        // Solo las unidades del servidor tienen actividades para practicar.
+                        if (u.objetivoServidorId != null) {
+                            OutlinedButton(onClick = onPracticar, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                                Text(stringResource(R.string.contenido_practicar), style = MaterialTheme.typography.titleMedium)
+                            }
+                        }
+                        // Una unidad del servidor se rinde contra el servidor; una local, con sus preguntas del teléfono.
+                        val alRendir = if (u.objetivoServidorId == null) onRendir else onRendirServidor
+                        Button(onClick = alRendir, modifier = Modifier.fillMaxWidth().height(60.dp)) {
                             Text(stringResource(R.string.contenido_rendir), style = MaterialTheme.typography.titleMedium)
                         }
                     }

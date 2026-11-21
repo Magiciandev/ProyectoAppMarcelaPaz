@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -52,8 +53,14 @@ class AsignarViewModel(
     private val _guardado = MutableStateFlow<GuardadoUiState>(GuardadoUiState.Idle)
     val guardado: StateFlow<GuardadoUiState> = _guardado.asStateFlow()
 
-    val asignaciones: StateFlow<List<Asignacion>> = repository.observarPorUnidad(unidadId)
-        .catch { emit(emptyList()) }
+    // Asignaciones que están en el servidor (vacío si la unidad es solo local o no hay conexión).
+    private val _delServidor = MutableStateFlow<List<Asignacion>>(emptyList())
+
+    // Una unidad tiene asignaciones locales o del servidor, nunca ambas: se muestran juntas.
+    val asignaciones: StateFlow<List<Asignacion>> = combine(
+        repository.observarPorUnidad(unidadId).catch { emit(emptyList()) },
+        _delServidor
+    ) { locales, delServidor -> delServidor + locales }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
@@ -62,6 +69,7 @@ class AsignarViewModel(
             val actual = repository.intentosMaximos(unidadId)
             _formulario.update { it.copy(intentos = actual) }
         }
+        viewModelScope.launch { _delServidor.value = repository.asignacionesDelServidor(unidadId) }
     }
 
     fun onCurso(v: String) { _formulario.update { it.copy(curso = v) }; _errores.update { it.copy(curso = null) } }
@@ -92,6 +100,7 @@ class AsignarViewModel(
                 .onSuccess {
                     _formulario.value = AsignarFormulario(intentos = f.intentos)
                     _guardado.value = GuardadoUiState.Success(it)
+                    _delServidor.value = repository.asignacionesDelServidor(unidadId)
                 }
                 .onFailure { _guardado.value = GuardadoUiState.Error(it.localizedMessage ?: "No se pudo guardar") }
         }

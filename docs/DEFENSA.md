@@ -6,12 +6,12 @@ Si la app no corre, lo demás vale 0: ensayar el arranque desde cero.
 | Min | Paso | Qué mostrar / decir | Dónde está |
 |---|---|---|---|
 | 1:00 | 1. Entorno | Abrir y ejecutar; entrar como `utp` | `MainActivity.kt` |
-| 2:00 | 2. Arquitectura | Flujo: Screen → ViewModel → Repository → DAO → Room. El estado baja, los eventos suben. ViewModel sin Context; MainActivity arma la cadena | `viewmodel/MpazViewModelFactory.kt`, `data/repository/`, `data/local/` |
+| 2:00 | 2. Arquitectura | Flujo: Screen → ViewModel → Repository → Room (local) o Retrofit (backend por el gateway). El estado baja, los eventos suben. ViewModel sin Context; MainActivity arma la cadena. Las llamadas devuelven `ResultadoRemoto` (Ok / ErrorHttp / SinConexion) | `viewmodel/MpazViewModelFactory.kt`, `data/repository/`, `data/remote/`, `data/local/` |
 | 1:30 | 3. Diseño | Paleta pizarra/tizas, texto grande, contraste AA, claro/oscuro, `Surface` base | `ui/theme/Color.kt`, `Theme.kt`, `MainActivity.kt` |
 | 2:00 | 4. Formularios | Enviar vacío → errores con ícono; el validador es una función pura con pruebas | `viewmodel/validation/*`, `ui/components/CampoValidado.kt`, `MensajeError.kt` |
 | 1:30 | 5. Estado | `MutableStateFlow` privado → `StateFlow` público; `sealed interface` Cargando/Listo/Error; `collectAsStateWithLifecycle` | cualquier `*ViewModel.kt` |
 | 1:00 | 6. Animaciones | Bienvenida, transiciones de navegación, opción correcta/incorrecta, barras del informe, estado vacío | `AppNavHost.kt`, `OpcionRespuesta.kt`, `InformeScreen.kt`, `EstadosVista.kt` |
-| 2:00 | 7. Room | Entidades, DAO con Flow/suspend, `version = 4`, repositorio con `Dispatchers.IO` y `Result`; cerrar/reabrir y persiste; consulta con AVG/GROUP BY | `data/local/AppDatabase.kt`, `InformeDao.kt` |
+| 2:00 | 7. Room y modo sin conexión | Entidades, DAO con Flow/suspend, `version = 10`, repositorio con `Dispatchers.IO` y `Result`; cerrar/reabrir y persiste; caché y cola de intentos pendientes que se envían al volver la red (WorkManager) | `data/local/AppDatabase.kt`, `IntentoPendienteDao.kt`, `CatalogoCacheDao.kt`, `data/repository/BandejaIntentos.kt`, `sync/` |
 | 1:30 | 8. Recursos nativos | Selector de fotos (sin permiso) y notificación con permiso desde API 33 (`areNotificationsEnabled` + `POST_NOTIFICATIONS`); resultado visible en la UI | `UnidadDetalleScreen.kt`, `ImagenApoyo.kt`, `Notificaciones.kt`, `InformeScreen.kt` |
 | 2:30 | 9. Modificación en vivo | Un ejercicio de la lista (abajo) | — |
 | **15:00** | | | |
@@ -37,5 +37,8 @@ Ensayar cada uno con cronómetro; marcar tu mejor tiempo.
 - **¿Dónde está la validación y por qué ahí?** En `viewmodel/validation` como funciones puras: se prueban sin Android y la UI solo muestra el resultado.
 - **¿Cómo se cifra la clave?** PBKDF2 con sal (`data/security/Cifrado.kt`); se guarda el hash, nunca el PIN.
 - **¿Qué pasa si cambio el esquema de Room?** Subo `version`; con `fallbackToDestructiveMigration` se recrea (solo desarrollo).
-- **¿Cómo evitas que el estudiante vea informes?** El repositorio exige rol Docente en cada operación, además de la navegación.
+- **¿Cómo evitas que el estudiante vea informes?** El servidor decide por el rol que lleva el token (JWT) y no entrega informes al estudiante; además la navegación no se los muestra.
+- **¿Qué pasa si el estudiante rinde sin conexión?** El intento se guarda primero en Room y, cuando vuelve la red, WorkManager lo envía. Cada intento lleva un `uuid`, así un reenvío no cuenta dos veces. Si hizo más intentos que el límite, el servidor toma solo los primeros N por fecha.
+- **¿Cómo sabe el docente si un estudiante no avanzó o no se conectó?** Ve la última conexión y la última sincronización, y un mensaje que las compara con la fecha de hoy.
+- **¿Por qué la app calcula el avance y no el servidor?** Porque el estudiante puede avanzar sin red: la app lo calcula con lo que hizo y lo envía; el servidor guarda el más reciente.
 - **¿Por qué no hay permiso para el selector de fotos?** El selector del sistema entrega solo la imagen elegida; no hace falta permiso.

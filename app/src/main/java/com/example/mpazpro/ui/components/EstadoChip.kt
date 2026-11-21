@@ -21,6 +21,8 @@ fun EstadoChip(estado: String, modifier: Modifier = Modifier) {
     val (fondo, texto) = when (estado) {
         EstadoUnidad.PUBLICADO -> colores.primaryContainer to colores.onPrimaryContainer
         EstadoUnidad.EN_REVISION -> colores.secondaryContainer to colores.onSecondaryContainer
+        EstadoUnidad.AUTORIZADO -> colores.tertiaryContainer to colores.onTertiaryContainer
+        EstadoUnidad.DESHABILITADO -> colores.errorContainer to colores.onErrorContainer
         else -> colores.surface to colores.onSurfaceVariant
     }
     Box(

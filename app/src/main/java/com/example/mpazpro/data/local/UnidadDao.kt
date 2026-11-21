@@ -19,8 +19,24 @@ interface UnidadDao {
     @Query("SELECT * FROM unidades WHERE id = :id")
     fun observarPorId(id: Long): Flow<Unidad?>
 
+    @Query("SELECT * FROM unidades WHERE id = :id")
+    suspend fun buscarPorId(id: Long): Unidad?
+
     @Query("UPDATE unidades SET estado = :estado WHERE id = :id")
     suspend fun actualizarEstado(id: Long, estado: String)
+
+    // Para saber si una unidad que viene del servidor ya está guardada en el teléfono.
+    @Query("SELECT * FROM unidades WHERE objetivoServidorId = :objetivoId LIMIT 1")
+    suspend fun buscarPorObjetivoServidor(objetivoId: Long): Unidad?
+
+    // Pone al día una unidad con lo que dice el servidor (no toca la imagen elegida en el teléfono).
+    @Query(
+        "UPDATE unidades SET titulo = :titulo, objetivoAprendizaje = :objetivo, asignatura = :asignatura, " +
+            "estado = :estado, contenido = :contenido WHERE id = :id"
+    )
+    suspend fun actualizarDesdeServidor(
+        id: Long, titulo: String, objetivo: String, asignatura: String, estado: String, contenido: String
+    )
 
     @Query("SELECT COUNT(*) FROM unidades")
     suspend fun contar(): Int

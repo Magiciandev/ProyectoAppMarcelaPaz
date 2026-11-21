@@ -21,6 +21,8 @@ import com.example.mpazpro.ui.screens.EstudianteUnidadesScreen
 import com.example.mpazpro.ui.screens.InformeScreen
 import com.example.mpazpro.ui.screens.InformesListaScreen
 import com.example.mpazpro.ui.screens.EvaluacionScreen
+import com.example.mpazpro.ui.screens.PruebaServidorScreen
+import com.example.mpazpro.ui.screens.ActividadesScreen
 import com.example.mpazpro.ui.screens.LoginScreen
 import com.example.mpazpro.ui.screens.CatalogoScreen
 import com.example.mpazpro.ui.screens.PanelScreen
@@ -40,6 +42,8 @@ object Rutas {
     const val PREGUNTAS = "preguntas/{unidadId}"
     const val ESTUDIANTE_UNIDADES = "estudiante/{estudianteId}"
     const val EVALUACION = "evaluacion/{unidadId}/{estudianteId}"
+    const val PRUEBA_SERVIDOR = "prueba/{unidadId}/{estudianteId}"
+    const val ACTIVIDADES = "actividades/{unidadId}/{estudianteId}"
     const val ASIGNAR = "asignar/{unidadId}"
     const val CONTENIDO = "contenido/{unidadId}/{estudianteId}"
     const val INFORMES = "informes/{docenteId}"
@@ -52,6 +56,8 @@ object Rutas {
     fun preguntas(unidadId: Long) = "preguntas/$unidadId"
     fun estudianteUnidades(estudianteId: Long) = "estudiante/$estudianteId"
     fun evaluacion(unidadId: Long, estudianteId: Long) = "evaluacion/$unidadId/$estudianteId"
+    fun pruebaServidor(unidadId: Long, estudianteId: Long) = "prueba/$unidadId/$estudianteId"
+    fun actividades(unidadId: Long, estudianteId: Long) = "actividades/$unidadId/$estudianteId"
     fun asignar(unidadId: Long) = "asignar/$unidadId"
     fun contenido(unidadId: Long, estudianteId: Long) = "contenido/$unidadId/$estudianteId"
     fun informes(docenteId: Long) = "informes/$docenteId"
@@ -160,6 +166,8 @@ fun AppNavHost(
             ContenidoScreen(
                 viewModel = viewModel(factory = factory),
                 onRendir = { navController.navigate(Rutas.evaluacion(unidadId, estudianteId)) },
+                onRendirServidor = { navController.navigate(Rutas.pruebaServidor(unidadId, estudianteId)) },
+                onPracticar = { navController.navigate(Rutas.actividades(unidadId, estudianteId)) },
                 onVolver = { navController.popBackStack() }
             )
         }
@@ -179,6 +187,18 @@ fun AppNavHost(
         }
         composable(Rutas.EVALUACION, arguments = listOf(argLong("unidadId"), argLong("estudianteId"))) {
             EvaluacionScreen(
+                viewModel = viewModel(factory = factory),
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Rutas.PRUEBA_SERVIDOR, arguments = listOf(argLong("unidadId"), argLong("estudianteId"))) {
+            PruebaServidorScreen(
+                viewModel = viewModel(factory = factory),
+                onVolver = { navController.popBackStack() }
+            )
+        }
+        composable(Rutas.ACTIVIDADES, arguments = listOf(argLong("unidadId"), argLong("estudianteId"))) {
+            ActividadesScreen(
                 viewModel = viewModel(factory = factory),
                 onVolver = { navController.popBackStack() }
             )

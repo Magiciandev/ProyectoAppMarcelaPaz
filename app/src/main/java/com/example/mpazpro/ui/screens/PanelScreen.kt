@@ -67,8 +67,11 @@ fun PanelScreen(
                         }
                         else -> BotonPanel(stringResource(R.string.panel_evaluaciones)) { onEvaluaciones(usuario.id) }
                     }
-                    // Catálogo que entrega el servidor (lo ve cada perfil según su rol).
-                    BotonPanel(stringResource(R.string.panel_catalogo), onCatalogo)
+                    // Catálogo que entrega el servidor: es una vista de apoyo para UTP y docente.
+                    // El estudiante no la ve; entra directo a «Mis evaluaciones».
+                    if (usuario.rol != Roles.ESTUDIANTE) {
+                        BotonPanel(stringResource(R.string.panel_catalogo), onCatalogo)
+                    }
                     OutlinedButton(
                         onClick = {
                             viewModel.cerrarSesion()

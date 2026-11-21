@@ -20,6 +20,7 @@
     <!-- Lista de unidades -->
     <string name="unidades_titulo">Unidades</string>
     <string name="unidades_nueva">Nueva unidad</string>
+    <string name="unidades_actualizar">Actualizar</string>
     <string name="unidades_vacio">Aún no hay unidades. Crea la primera con el botón de abajo.</string>
 
     <!-- Formulario de unidad -->
@@ -52,7 +53,9 @@
     <string name="detalle_titulo">Detalle de unidad</string>
     <string name="detalle_historial">Historial</string>
     <string name="detalle_enviar">Enviar a revisión</string>
-    <string name="detalle_aprobar">Aprobar y publicar</string>
+    <string name="detalle_autorizar">Autorizar</string>
+    <string name="detalle_publicar">Publicar</string>
+    <string name="detalle_reabrir">Reabrir como borrador</string>
     <string name="detalle_rechazar">Rechazar</string>
     <string name="detalle_deshabilitar">Deshabilitar</string>
     <string name="detalle_preguntas">Editar preguntas de la prueba</string>
@@ -73,6 +76,7 @@
     <string name="est_vacio">Todavía no hay evaluaciones disponibles.</string>
     <string name="est_sin_intentos">Aún no la has rendido</string>
     <string name="est_ultimo">Último resultado: %1$d%%</string>
+    <string name="est_intentos_servidor">Intentos: %1$d de %2$d · hasta el %3$s</string>
     <string name="eval_titulo">Evaluación</string>
     <string name="eval_progreso">Pregunta %1$d de %2$d</string>
     <string name="eval_acierto">¡Muy bien!</string>
@@ -93,6 +97,17 @@
     <string name="imagen_desc">Imagen de apoyo de %1$s</string>
     <string name="contenido_titulo">Aprende</string>
     <string name="contenido_rendir">Rendir la prueba</string>
+    <string name="prueba_secuencia_instruccion">Toca las opciones en el orden correcto.</string>
+    <string name="prueba_tu_orden">Tu orden: %1$s</string>
+    <string name="prueba_deshacer">Deshacer</string>
+    <string name="prueba_comprobar">Comprobar</string>
+    <string name="prueba_orden_correcto">El orden correcto es: %1$s</string>
+    <string name="prueba_error_envio">No se pudo enviar tu intento: %1$s</string>
+    <string name="prueba_reintentar">Reintentar</string>
+    <string name="prueba_resultado_puntos">Obtuviste %1$s de %2$s puntos</string>
+    <string name="prueba_porcentaje">%1$d%%</string>
+    <string name="prueba_guardado_pendiente">Tu intento quedó guardado en este teléfono. Se enviará cuando haya conexión.</string>
+    <string name="prueba_no_registrado">Tu intento no quedó registrado. %1$s</string>
     <string name="asignar_titulo">Asignar unidad</string>
     <string name="asignar_curso">Curso</string>
     <string name="asignar_desde">Disponible desde</string>
@@ -112,6 +127,12 @@
     <string name="panel_informes">Informes de estudiantes</string>
     <string name="informes_titulo">Informes</string>
     <string name="informes_vacio">No hay estudiantes registrados.</string>
+    <string name="informes_reintentar">Reintentar</string>
+    <string name="informes_avance">Avance: %1$d %%</string>
+    <string name="informes_sin_avance">Avance: sin registro todavía</string>
+    <string name="informes_conexion">Última conexión: %1$s</string>
+    <string name="informes_sincronizacion">Última sincronización: %1$s</string>
+    <string name="informes_nunca">nunca</string>
     <string name="informe_titulo">Informe del estudiante</string>
     <string name="informe_general">Progreso general: %1$d %%</string>
     <string name="informe_aviso_umbrales">Niveles según umbrales provisorios (80 % y 60 %). Es una guía: la decisión es del docente.</string>
@@ -131,6 +152,23 @@
     <string name="reinicio_todo">todas las asignaturas</string>
     <string name="reinicio_confirmar_titulo">¿Confirmas el reinicio?</string>
     <string name="reinicio_confirmar_texto">Se reiniciará: %1$s (%2$s). Esta acción no se puede deshacer.</string>
+    <string name="reinicio_servidor">Reiniciar progreso e intentos</string>
+    <string name="reinicio_servidor_texto">Se archivan todos los intentos y el avance de este estudiante en todos los objetivos. No se borra nada del servidor, pero dejan de contar y no se puede deshacer desde la app.</string>
+    <string name="informe_sin_pruebas">Aún no rinde ninguna prueba</string>
+    <string name="informe_sin_objetivos">Este estudiante no tiene objetivos asignados.</string>
+    <string name="informe_intentos">Intentos válidos: %1$d de %2$d</string>
+    <string name="informe_mejor">Mejor resultado: %1$d %% · %2$s</string>
+    <string name="informe_seccion">Informe pedagógico</string>
+    <string name="informe_sin_informe">Todavía no hay un informe generado para este estudiante.</string>
+    <string name="informe_generar">Generar informe</string>
+    <string name="informe_generar_nuevo">Generar informe nuevo</string>
+    <string name="informe_validar">Validar informe</string>
+    <string name="informe_emitido">Informe del %1$s</string>
+    <string name="informe_puntaje">Resultado: %1$d %% · %2$s</string>
+    <string name="informe_validado">Validado por el docente</string>
+    <string name="informe_pendiente_validar">Pendiente de validación</string>
+    <string name="informe_refuerzo">Requieren refuerzo: %1$s</string>
+    <string name="informe_respuestas">%1$s: %2$d de %3$d respuestas correctas</string>
     <string name="reinicio_si">Sí, reiniciar</string>
     <string name="notif_canal">Avisos de informes</string>
     <string name="notif_titulo">MPAZ PRO 2.º</string>

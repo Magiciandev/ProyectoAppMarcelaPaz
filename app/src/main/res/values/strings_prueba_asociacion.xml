@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prueba_asociacion_instruccion">Toca una opción y luego su pareja.</string>
+    <string name="prueba_pares_unidos">Pares unidos:</string>
+    <string name="prueba_busca_pareja">Elegiste «%1$s». Ahora toca su pareja.</string>
+    <string name="prueba_parejas_correctas">Las parejas correctas son: %1$s</string>
+</resources>
