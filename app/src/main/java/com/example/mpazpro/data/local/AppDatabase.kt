@@ -12,9 +12,11 @@ import com.example.mpazpro.data.model.CacheUnidad
 import com.example.mpazpro.data.model.Configuracion
 import com.example.mpazpro.data.model.HistorialUnidad
 import com.example.mpazpro.data.model.Intento
+import com.example.mpazpro.data.model.ItemCompletado
 import com.example.mpazpro.data.model.Observacion
 import com.example.mpazpro.data.model.Pregunta
 import com.example.mpazpro.data.model.Resultado
+import com.example.mpazpro.data.model.TotalesObjetivo
 import com.example.mpazpro.data.model.Unidad
 import com.example.mpazpro.data.model.Usuario
 
@@ -24,10 +26,12 @@ import com.example.mpazpro.data.model.Usuario
         Pregunta::class, Resultado::class, Intento::class,
         Asignacion::class, Configuracion::class, Observacion::class,
         // v5: caché del catálogo que entrega el backend
-        CacheAsignatura::class, CacheUnidad::class, CacheObjetivo::class, CacheContenido::class
+        CacheAsignatura::class, CacheUnidad::class, CacheObjetivo::class, CacheContenido::class,
+        // v7: avance del estudiante (ítems completados y totales por objetivo)
+        ItemCompletado::class, TotalesObjetivo::class
     ],
-    // v6: Unidad guarda el id de su objetivo en el servidor
-    version = 6,
+    // v7: tablas del avance del estudiante
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -40,6 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun asignacionDao(): AsignacionDao
     abstract fun informeDao(): InformeDao
     abstract fun catalogoCacheDao(): CatalogoCacheDao
+    abstract fun avanceLocalDao(): AvanceLocalDao
 
     companion object {
         @Volatile
