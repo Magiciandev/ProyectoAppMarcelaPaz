@@ -22,7 +22,9 @@ class BandejaIntentos(
     private val ahora: () -> Instant = { Instant.now() },
     private val gson: Gson = Gson(),
     // Se llama cuando un envío falla y los intentos siguen pendientes (para pedir un reintento con conexión).
-    private val alQuedarPendiente: () -> Unit = {}
+    private val alQuedarPendiente: () -> Unit = {},
+    // Se llama por cada intento que el servidor ACEPTÓ (usuario local, objetivo): mantiene al día los intentos usados guardados.
+    private val alAceptar: suspend (usuarioId: Long, objetivoId: Long) -> Unit = { _, _ -> }
 ) {
 
     /** Guarda el intento antes de enviarlo. Repetir el mismo uuid no lo duplica. */
@@ -57,6 +59,9 @@ class BandejaIntentos(
                 .filter { it.uuid != null && it.uuid in uuidsPendientes && it.resultado in DEFINITIVOS }
                 .associateBy { it.uuid!! }
             if (definitivos.isNotEmpty()) dao.borrar(definitivos.keys.toList())
+            // Un fallo al anotarlo en la caché no debe devolver el intento a pendiente: ya se borró.
+            pendientes.filter { definitivos[it.uuid]?.resultado == "ACEPTADO" }
+                .forEach { runCatching { alAceptar(usuarioId, it.objetivoId) } }
             definitivos
         })
     }

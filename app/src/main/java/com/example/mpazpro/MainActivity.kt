@@ -19,6 +19,7 @@ import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.AsignacionServidor
 import com.example.mpazpro.data.repository.BandejaIntentos
+import com.example.mpazpro.data.repository.CacheEvaluacionRoom
 import com.example.mpazpro.data.repository.AprobacionServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.ActividadesServidor
@@ -62,7 +63,9 @@ class MainActivity : ComponentActivity() {
 
         val catalogoRepository = CatalogoRepository(cliente.contenidos, baseDeDatos.catalogoCacheDao())
 
-        val actividadesServidor = ActividadesServidor(cliente.evaluaciones)
+        // Asignaciones y paquetes de evaluación guardados en el teléfono para usar la app sin conexión.
+        val cacheEvaluacion = CacheEvaluacionRoom(baseDeDatos.cacheEvaluacionDao())
+        val actividadesServidor = ActividadesServidor(cliente.evaluaciones, cacheEvaluacion)
         // Lo que quede pendiente (avance o intentos) se envía en segundo plano en cuanto haya conexión.
         val pedirEnvio = { ProgramadorSync.programar(applicationContext) }
         // El avance del estudiante: los ítems completados se anotan en Room y se envían al servidor.
@@ -78,14 +81,14 @@ class MainActivity : ComponentActivity() {
             ),
             evaluacionRepository = EvaluacionRepository(baseDeDatos.preguntaDao(), baseDeDatos.evaluacionDao()),
             asignacionRepository = AsignacionRepository(
-                baseDeDatos.asignacionDao(), baseDeDatos.unidadDao(), AsignacionServidor(cliente.progreso)
+                baseDeDatos.asignacionDao(), baseDeDatos.unidadDao(), AsignacionServidor(cliente.progreso, cacheEvaluacion)
             ),
             informeRepository = InformeRepository(
                 baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
             ),
             catalogoRepository = catalogoRepository,
             sesionStore = sesion,
-            pruebaServidor = PruebaServidor(cliente.evaluaciones, cliente.progreso),
+            pruebaServidor = PruebaServidor(cliente.evaluaciones, cliente.progreso, cacheEvaluacion),
             actividadesServidor = actividadesServidor,
             monitoreoServidor = MonitoreoServidor(cliente.progreso),
             informeServidor = InformeServidor(cliente.progreso) {
@@ -93,7 +96,7 @@ class MainActivity : ComponentActivity() {
             },
             avanceServidor = avanceServidor,
             // Intentos de prueba terminados: se guardan en Room y se envían cuando hay conexión.
-            bandejaIntentos = BandejaIntentos(cliente.progreso, baseDeDatos.intentoPendienteDao(), alQuedarPendiente = pedirEnvio)
+            bandejaIntentos = BandejaIntentos(cliente.progreso, baseDeDatos.intentoPendienteDao(), alQuedarPendiente = pedirEnvio, alAceptar = cacheEvaluacion::sumarIntentoAceptado)
         )
 
         Notificaciones.crearCanal(applicationContext)

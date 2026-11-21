@@ -31,8 +31,25 @@ object MapeoActividades {
     }
 }
 
-/** Pide al servidor las actividades de un objetivo (ms-actividades-evaluaciones, paquete de evaluación). */
-class ActividadesServidor(private val evaluaciones: EvaluacionesApi) {
-    suspend fun cargar(objetivoId: Long): ResultadoRemoto<List<ActividadPracticable>> =
-        llamarApi { MapeoActividades.aActividades(evaluaciones.paquete(objetivoId)) }
+/**
+ * Pide al servidor las actividades de un objetivo (ms-actividades-evaluaciones, paquete de evaluación) y guarda el
+ * paquete en el teléfono. Sin conexión usa el paquete guardado; si nunca se bajó, informa que no hay conexión.
+ */
+class ActividadesServidor(
+    private val evaluaciones: EvaluacionesApi,
+    private val cache: CacheEvaluacion
+) {
+    suspend fun cargar(objetivoId: Long): ResultadoRemoto<List<ActividadPracticable>> {
+        val enLinea = llamarApi { evaluaciones.paquete(objetivoId) }
+        val paquete = when (enLinea) {
+            is ResultadoRemoto.Ok -> {
+                // Guardar la caché nunca debe impedir practicar.
+                runCatching { cache.guardarPaquete(enLinea.valor) }
+                enLinea.valor
+            }
+            is ResultadoRemoto.ErrorHttp -> return enLinea
+            is ResultadoRemoto.SinConexion -> cache.paquete(objetivoId) ?: return enLinea
+        }
+        return ResultadoRemoto.Ok(MapeoActividades.aActividades(paquete))
+    }
 }

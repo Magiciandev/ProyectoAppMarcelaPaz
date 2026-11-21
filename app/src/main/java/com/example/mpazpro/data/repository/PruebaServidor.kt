@@ -109,27 +109,58 @@ object ConstructorIntento {
 class PruebaServidor(
     private val evaluaciones: EvaluacionesApi,
     private val progreso: ProgresoApi,
+    // Lo último que se cargó con conexión: permite rendir sin red con la prueba ya guardada.
+    private val cache: CacheEvaluacion,
     // Qué día es hoy en el colegio; las pruebas lo reemplazan por una fecha fija.
     private val hoy: () -> LocalDate = { ZonaColegio.hoy() }
 ) {
 
-    suspend fun cargar(objetivoId: Long): ResultadoRemoto<CargaPrueba> =
-        llamarApi { cargarEnServidor(objetivoId) }
+    /**
+     * Con conexión baja la asignación y la prueba y las guarda en el teléfono. Sin conexión usa lo guardado la última
+     * vez (decisión del proyecto: SÍ se puede rendir sin red); si nunca se cargó con red, informa que no hay conexión.
+     * `estudianteId` es el id local del estudiante: la caché de asignaciones es de cada persona.
+     */
+    suspend fun cargar(estudianteId: Long, objetivoId: Long): ResultadoRemoto<CargaPrueba> {
+        val enLinea = llamarApi { cargarEnServidor(estudianteId, objetivoId) }
+        if (enLinea !is ResultadoRemoto.SinConexion) return enLinea
+        return cargarDeCache(estudianteId, objetivoId) ?: enLinea
+    }
 
     /** El mismo lote se puede reenviar sin riesgo: los uuid evitan que cuente dos veces. */
     suspend fun enviar(solicitud: SyncRequestDto): ResultadoRemoto<SyncResponseDto> =
         llamarApi { progreso.sincronizar(solicitud) }
 
-    private suspend fun cargarEnServidor(objetivoId: Long): CargaPrueba {
-        val asignacion = progreso.misAsignaciones().firstOrNull { it.objetivoId == objetivoId }
-            ?: return CargaPrueba.SinAsignacion
+    private suspend fun cargarEnServidor(estudianteId: Long, objetivoId: Long): CargaPrueba {
+        val todas = progreso.misAsignaciones()
+        // Guardar la caché nunca debe impedir rendir: si falla, se sigue con lo que bajó el servidor.
+        runCatching { cache.guardarAsignaciones(estudianteId, todas) }
+        val asignacion = todas.firstOrNull { it.objetivoId == objetivoId } ?: return CargaPrueba.SinAsignacion
         // Se avisa antes de bajar la prueba, no al final: el servidor rechazaría el intento con FUERA_DE_FECHA.
-        when (val ventana = disponibilidad(asignacion, hoy())) {
-            is DisponibilidadPrueba.AunNoDisponible -> return CargaPrueba.AunNoDisponible(ventana.desde)
-            is DisponibilidadPrueba.YaCerrada -> return CargaPrueba.YaCerrada(ventana.hasta)
-            DisponibilidadPrueba.EnFecha -> Unit
-        }
+        fueraDeVentana(asignacion)?.let { return it }
         val paquete = evaluaciones.paquete(objetivoId)
+        runCatching { cache.guardarPaquete(paquete) }
+        return aCarga(asignacion, paquete)
+    }
+
+    // Sin conexión: la asignación y el paquete guardados. La ventana de fechas se valida con la fecha del teléfono;
+    // el servidor tiene la última palabra cuando el intento se sincroniza. Devuelve null si no hay nada guardado.
+    private suspend fun cargarDeCache(estudianteId: Long, objetivoId: Long): ResultadoRemoto<CargaPrueba>? {
+        val asignacion = cache.asignacion(estudianteId, objetivoId) ?: return null
+        fueraDeVentana(asignacion)?.let { return ResultadoRemoto.Ok(it) }
+        val paquete = cache.paquete(objetivoId) ?: return null
+        return ResultadoRemoto.Ok(aCarga(asignacion, paquete))
+    }
+
+    // Si hoy no se puede rendir, el aviso que corresponde; null si está en fecha.
+    private fun fueraDeVentana(asignacion: AsignacionEstudianteDto): CargaPrueba? =
+        when (val ventana = disponibilidad(asignacion, hoy())) {
+            is DisponibilidadPrueba.AunNoDisponible -> CargaPrueba.AunNoDisponible(ventana.desde)
+            is DisponibilidadPrueba.YaCerrada -> CargaPrueba.YaCerrada(ventana.hasta)
+            DisponibilidadPrueba.EnFecha -> null
+        }
+
+    private fun aCarga(asignacion: AsignacionEstudianteDto, paquete: PaqueteEvaluacionDto): CargaPrueba {
+        val objetivoId = asignacion.objetivoId
         val prueba = paquete.prueba ?: return CargaPrueba.SinPrueba
         val preguntas = MapeoPrueba.aPreguntas(paquete) ?: return CargaPrueba.NoSoportada
         if (preguntas.isEmpty()) return CargaPrueba.SinPrueba

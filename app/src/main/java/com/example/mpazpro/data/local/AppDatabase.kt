@@ -5,9 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.mpazpro.data.model.Asignacion
+import com.example.mpazpro.data.model.CacheAsignacionEstudiante
 import com.example.mpazpro.data.model.CacheAsignatura
 import com.example.mpazpro.data.model.CacheContenido
 import com.example.mpazpro.data.model.CacheObjetivo
+import com.example.mpazpro.data.model.CachePaquete
 import com.example.mpazpro.data.model.CacheUnidad
 import com.example.mpazpro.data.model.Configuracion
 import com.example.mpazpro.data.model.HistorialUnidad
@@ -31,10 +33,12 @@ import com.example.mpazpro.data.model.Usuario
         // v7: avance del estudiante (ítems completados y totales por objetivo)
         ItemCompletado::class, TotalesObjetivo::class,
         // v8: intentos de prueba terminados que esperan confirmación del servidor
-        IntentoPendiente::class
+        IntentoPendiente::class,
+        // v9: asignaciones del estudiante y paquetes de evaluación para usar sin conexión
+        CacheAsignacionEstudiante::class, CachePaquete::class
     ],
-    // v8: cola de intentos pendientes
-    version = 8,
+    // v9: caché de evaluación sin conexión
+    version = 9,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -49,6 +53,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun catalogoCacheDao(): CatalogoCacheDao
     abstract fun avanceLocalDao(): AvanceLocalDao
     abstract fun intentoPendienteDao(): IntentoPendienteDao
+    abstract fun cacheEvaluacionDao(): CacheEvaluacionDao
 
     companion object {
         @Volatile

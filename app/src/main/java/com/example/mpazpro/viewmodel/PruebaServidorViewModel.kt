@@ -83,7 +83,7 @@ class PruebaServidorViewModel(
                 _uiState.value = PruebaServidorUiState.Mensaje(MensajesPrueba.SIN_UNIDAD, esError = true)
                 return@launch
             }
-            _uiState.value = when (val carga = servidor.cargar(objetivoId)) {
+            _uiState.value = when (val carga = servidor.cargar(estudianteId, objetivoId)) {
                 is ResultadoRemoto.Ok -> alCargar(carga.valor)
                 is ResultadoRemoto.ErrorHttp -> PruebaServidorUiState.Mensaje(carga.mensaje, esError = true)
                 is ResultadoRemoto.SinConexion -> PruebaServidorUiState.Mensaje(carga.mensaje, esError = true)

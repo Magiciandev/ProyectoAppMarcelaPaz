@@ -58,7 +58,7 @@ class EstudianteUnidadesViewModel(
             // Envía el avance que haya quedado pendiente (por ejemplo, hecho sin conexión).
             if (estudianteId > 0) avance.sincronizar(estudianteId)
             unidadRepository.actualizarDesdeServidor()
-            _delServidor.value = asignacionRepository.misAsignacionesDelServidor()
+            _delServidor.value = asignacionRepository.misAsignacionesDelServidor(estudianteId)
                 .mapNotNull { asignacion ->
                     unidadRepository.buscarPorObjetivoServidor(asignacion.objetivoId)
                         ?.let { UnidadEstudiante(it, null, asignacion) }

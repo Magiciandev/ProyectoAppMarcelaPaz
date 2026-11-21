@@ -10,6 +10,7 @@ import com.example.mpazpro.data.remote.ClienteApi
 import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.BandejaIntentos
+import com.example.mpazpro.data.repository.CacheEvaluacionRoom
 import com.example.mpazpro.data.repository.ResultadoSincronizacion
 import com.example.mpazpro.data.repository.Sincronizador
 
@@ -30,8 +31,9 @@ class SincronizacionWorker(contexto: Context, parametros: WorkerParameters) : Co
         val local = baseDeDatos.usuarioDao().buscarPorUsuario(actual.usuario) ?: return Result.success()
 
         val cliente = ClienteApi(ApiConfig.baseUrl, sesion)
-        val bandeja = BandejaIntentos(cliente.progreso, baseDeDatos.intentoPendienteDao())
-        val avance = crearAvanceServidor(cliente.progreso, ActividadesServidor(cliente.evaluaciones), baseDeDatos)
+        val cache = CacheEvaluacionRoom(baseDeDatos.cacheEvaluacionDao())
+        val bandeja = BandejaIntentos(cliente.progreso, baseDeDatos.intentoPendienteDao(), alAceptar = cache::sumarIntentoAceptado)
+        val avance = crearAvanceServidor(cliente.progreso, ActividadesServidor(cliente.evaluaciones, cache), baseDeDatos)
 
         val resultado = Sincronizador(
             enviarIntentos = { bandeja.enviar(local.id) },

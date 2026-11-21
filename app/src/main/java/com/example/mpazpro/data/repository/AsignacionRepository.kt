@@ -63,14 +63,14 @@ class AsignacionRepository(
             }
         }
 
-    // Estudiante: lo que su docente le asignó en el servidor. Sin conexión o sin sesión del servidor, la lista viene
-    // vacía y la pantalla muestra solo lo que hay en el teléfono.
-    suspend fun misAsignacionesDelServidor(): List<AsignacionEstudianteDto> =
+    // Estudiante: lo que su docente le asignó en el servidor. Sin conexión se usa lo guardado la última vez; si no hay
+    // nada guardado o no hay sesión del servidor, la lista viene vacía y la pantalla muestra solo lo del teléfono.
+    suspend fun misAsignacionesDelServidor(estudianteId: Long): List<AsignacionEstudianteDto> =
         withContext(Dispatchers.IO) {
             if (servidor == null) {
                 emptyList()
             } else {
-                when (val remoto = servidor.misAsignaciones()) {
+                when (val remoto = servidor.misAsignaciones(estudianteId)) {
                     is ResultadoRemoto.Ok -> remoto.valor
                     is ResultadoRemoto.ErrorHttp -> emptyList()
                     is ResultadoRemoto.SinConexion -> emptyList()

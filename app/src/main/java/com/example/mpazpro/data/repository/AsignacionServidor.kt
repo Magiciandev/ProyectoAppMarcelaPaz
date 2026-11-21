@@ -12,7 +12,11 @@ import com.example.mpazpro.data.remote.llamarApi
  * Asignar un objetivo a un curso en el servidor (ms-progreso). Solo el docente dueño del curso puede hacerlo, y el
  * objetivo debe estar autorizado o publicado por UTP: si no, el servidor responde con el motivo.
  */
-class AsignacionServidor(private val api: ProgresoApi) {
+class AsignacionServidor(
+    private val api: ProgresoApi,
+    // Solo la usa el estudiante (para ver sus asignaciones sin conexión); sin ella todo funciona como antes.
+    private val cache: CacheEvaluacion? = null
+) {
 
     /** Crea la asignación o, si el objetivo ya estaba asignado a ese curso, la actualiza. */
     suspend fun guardar(objetivoId: Long, asignacion: Asignacion, intentos: Int): ResultadoRemoto<AsignacionDto> =
@@ -48,8 +52,17 @@ class AsignacionServidor(private val api: ProgresoApi) {
     }
 
     /** Estudiante: lo que le asignaron y está vigente (de su curso o individual), con los intentos que lleva usados. */
-    suspend fun misAsignaciones(): ResultadoRemoto<List<AsignacionEstudianteDto>> =
-        llamarApi { api.misAsignaciones() }
+    suspend fun misAsignaciones(estudianteId: Long? = null): ResultadoRemoto<List<AsignacionEstudianteDto>> {
+        val enLinea = llamarApi { api.misAsignaciones() }
+        if (cache == null || estudianteId == null) return enLinea
+        return when (enLinea) {
+            // Con conexión se guarda lo que entregó el servidor; sin conexión se usa lo último guardado.
+            is ResultadoRemoto.Ok -> enLinea.also { runCatching { cache.guardarAsignaciones(estudianteId, enLinea.valor) } }
+            is ResultadoRemoto.ErrorHttp -> enLinea
+            is ResultadoRemoto.SinConexion -> cache.asignaciones(estudianteId)
+                .takeIf { it.isNotEmpty() }?.let { ResultadoRemoto.Ok(it) } ?: enLinea
+        }
+    }
 
     /** Estudiante: avisa al servidor que se conectó (el docente ve la última conexión de cada estudiante). */
     suspend fun registrarConexion(): ResultadoRemoto<Boolean> =

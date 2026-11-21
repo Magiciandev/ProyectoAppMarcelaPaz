@@ -208,4 +208,34 @@ class AsignacionServidorTest {
         assertEquals(true, (r as ResultadoRemoto.Ok<Boolean>).valor)
         assertEquals(1, api.conexiones)
     }
+
+    // ---- el estudiante ve sus asignaciones sin conexión (caché)
+    private val propiaGuardable = AsignacionEstudianteDto(
+        asignacionId = 3, objetivoId = 100, fechaDesde = "2026-11-19", fechaHasta = "2026-12-19",
+        limiteIntentos = 3, intentosUsados = 1
+    )
+
+    @Test fun con_conexion_las_asignaciones_del_estudiante_se_guardan() = runBlocking {
+        val cache = CacheEvaluacionFalsa()
+
+        AsignacionServidor(ProgresoFalso(propias = listOf(propiaGuardable)), cache).misAsignaciones(estudianteId = 7)
+
+        assertEquals(listOf(propiaGuardable), cache.asignacionesPorUsuario[7L])
+    }
+
+    @Test fun sin_conexion_las_asignaciones_salen_de_lo_guardado() = runBlocking {
+        val cache = CacheEvaluacionFalsa()
+        cache.guardarAsignaciones(7, listOf(propiaGuardable))
+
+        val r = AsignacionServidor(ProgresoFalso(errorDeRed = java.io.IOException("sin red")), cache).misAsignaciones(estudianteId = 7)
+
+        assertEquals(listOf(propiaGuardable), (r as ResultadoRemoto.Ok<List<AsignacionEstudianteDto>>).valor)
+    }
+
+    @Test fun sin_conexion_y_sin_nada_guardado_informa_sin_conexion_en_la_lista() = runBlocking {
+        val r = AsignacionServidor(ProgresoFalso(errorDeRed = java.io.IOException("sin red")), CacheEvaluacionFalsa())
+            .misAsignaciones(estudianteId = 7)
+
+        assertTrue(r is ResultadoRemoto.SinConexion)
+    }
 }

@@ -146,8 +146,11 @@ class PruebaServidorTest {
     }
 
     // ---- llamadas al servidor
-    private class EvaluacionesFalso(private val paquete: PaqueteEvaluacionDto) : EvaluacionesApi {
-        override suspend fun paquete(objetivoId: Long): PaqueteEvaluacionDto = paquete
+    private class EvaluacionesFalso(private val paquete: PaqueteEvaluacionDto, private val sinRed: Boolean = false) : EvaluacionesApi {
+        override suspend fun paquete(objetivoId: Long): PaqueteEvaluacionDto {
+            if (sinRed) throw IOException("sin red")
+            return paquete
+        }
         override suspend fun preguntas(objetivoId: Long): List<PreguntaDto> = throw NotImplementedError()
         override suspend fun crearPregunta(cuerpo: PreguntaRequestDto): PreguntaDto = throw NotImplementedError()
         override suspend fun actualizarPregunta(id: Long, cuerpo: PreguntaRequestDto): PreguntaDto = throw NotImplementedError()
@@ -167,11 +170,15 @@ class PruebaServidorTest {
     private class ProgresoFalso(
         private val propias: List<AsignacionEstudianteDto>,
         private val respuestaSync: SyncResponseDto = SyncResponseDto(intentos = listOf(ResultadoIntentoDto("u", "ACEPTADO"))),
-        private val errorDeRed: Exception? = null
+        private val errorDeRed: Exception? = null,
+        private val asignacionesSinRed: Boolean = false
     ) : ProgresoApi {
         var enviado: SyncRequestDto? = null
 
-        override suspend fun misAsignaciones(): List<AsignacionEstudianteDto> = propias
+        override suspend fun misAsignaciones(): List<AsignacionEstudianteDto> {
+            if (asignacionesSinRed) throw IOException("sin red")
+            return propias
+        }
         override suspend fun sincronizar(lote: SyncRequestDto): SyncResponseDto {
             if (errorDeRed != null) throw errorDeRed
             enviado = lote
@@ -203,13 +210,17 @@ class PruebaServidorTest {
     // Hoy fijo (20-11-2026) para que las pruebas no dependan del reloj real.
     private val HOY = LocalDate.of(2026, 11, 20)
 
-    private fun servidorCon(paquete: PaqueteEvaluacionDto, asignaciones: List<AsignacionEstudianteDto>, hoy: LocalDate = HOY) =
-        PruebaServidor(EvaluacionesFalso(paquete), ProgresoFalso(asignaciones), hoy = { hoy })
+    private val ESTUDIANTE = 10L
+
+    private fun servidorCon(
+        paquete: PaqueteEvaluacionDto, asignaciones: List<AsignacionEstudianteDto>, hoy: LocalDate = HOY,
+        cache: CacheEvaluacion = CacheEvaluacionFalsa()
+    ) = PruebaServidor(EvaluacionesFalso(paquete), ProgresoFalso(asignaciones), cache, hoy = { hoy })
 
     @Test fun carga_la_prueba_con_el_limite_y_los_intentos_del_servidor() = runBlocking {
         val servidor = servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), listOf(asignada()))
 
-        val r = servidor.cargar(1)
+        val r = servidor.cargar(ESTUDIANTE, 1)
 
         assertTrue(r is ResultadoRemoto.Ok)
         val carga = (r as ResultadoRemoto.Ok<CargaPrueba>).valor
@@ -224,7 +235,7 @@ class PruebaServidorTest {
     @Test fun sin_asignacion_no_se_puede_rendir() = runBlocking {
         val servidor = servidorCon(paquete(listOf(p1), enPruebaNormal), listOf(asignada(objetivoId = 99)))
 
-        val r = servidor.cargar(1)
+        val r = servidor.cargar(ESTUDIANTE, 1)
 
         assertTrue((r as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.SinAsignacion)
     }
@@ -233,8 +244,8 @@ class PruebaServidorTest {
         val sinPrueba = PaqueteEvaluacionDto(objetivoId = 1, preguntas = listOf(p1), prueba = null)
         val conAsociacion = paquete(listOf(p1, p4), listOf(PreguntaEnPruebaDto(1, 1, 1.0), PreguntaEnPruebaDto(4, 2, 1.0)))
 
-        val a = servidorCon(sinPrueba, listOf(asignada())).cargar(1)
-        val b = servidorCon(conAsociacion, listOf(asignada())).cargar(1)
+        val a = servidorCon(sinPrueba, listOf(asignada())).cargar(ESTUDIANTE, 1)
+        val b = servidorCon(conAsociacion, listOf(asignada())).cargar(ESTUDIANTE, 1)
 
         assertTrue((a as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.SinPrueba)
         assertTrue((b as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.NoSoportada)
@@ -244,7 +255,7 @@ class PruebaServidorTest {
         val progreso = ProgresoFalso(listOf(asignada()))
         val lote = ConstructorIntento.armar(prueba, 2, listOf(listOf(0), listOf(0), listOf(1, 0)), Instant.now()) { java.util.UUID.randomUUID().toString() }
 
-        val r = PruebaServidor(EvaluacionesFalso(paquete(listOf(p1), enPruebaNormal)), progreso).enviar(lote)
+        val r = PruebaServidor(EvaluacionesFalso(paquete(listOf(p1), enPruebaNormal)), progreso, CacheEvaluacionFalsa()).enviar(lote)
 
         assertTrue(r is ResultadoRemoto.Ok)
         assertEquals("ACEPTADO", (r as ResultadoRemoto.Ok<SyncResponseDto>).valor.intentos.single().resultado)
@@ -260,7 +271,7 @@ class PruebaServidorTest {
         )
 
     private suspend fun cargaCon(asignacion: AsignacionEstudianteDto): CargaPrueba =
-        (servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), listOf(asignacion)).cargar(1) as ResultadoRemoto.Ok<CargaPrueba>).valor
+        (servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), listOf(asignacion)).cargar(ESTUDIANTE, 1) as ResultadoRemoto.Ok<CargaPrueba>).valor
 
     @Test fun antes_de_la_habilitacion_de_la_prueba_se_avisa_cuando_se_abre() = runBlocking {
         // La asignación ya empezó, pero la docente habilitó la prueba para el 25-11.
@@ -293,9 +304,76 @@ class PruebaServidorTest {
 
         val r = PruebaServidor(
             EvaluacionesFalso(paquete(listOf(p1), enPruebaNormal)),
-            ProgresoFalso(listOf(asignada()), errorDeRed = IOException("sin red"))
+            ProgresoFalso(listOf(asignada()), errorDeRed = IOException("sin red")),
+            CacheEvaluacionFalsa()
         ).enviar(lote)
 
         assertTrue(r is ResultadoRemoto.SinConexion)
+    }
+
+    // ---- sin conexión: se usa lo guardado la última vez que se cargó con red
+    private fun conRed(cache: CacheEvaluacion, asignaciones: List<AsignacionEstudianteDto>) =
+        servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), asignaciones, cache = cache)
+
+    private fun sinRed(cache: CacheEvaluacion, hoy: LocalDate = HOY) = PruebaServidor(
+        EvaluacionesFalso(paquete(listOf(p1), enPruebaNormal), sinRed = true),
+        ProgresoFalso(emptyList(), asignacionesSinRed = true), cache, hoy = { hoy }
+    )
+
+    @Test fun con_conexion_se_guardan_las_asignaciones_y_el_paquete() = runBlocking {
+        val cache = CacheEvaluacionFalsa()
+
+        conRed(cache, listOf(asignada(), asignada(objetivoId = 3))).cargar(ESTUDIANTE, 1)
+
+        assertEquals(listOf(1L, 3L), cache.asignacionesPorUsuario[ESTUDIANTE]!!.map { it.objetivoId })
+        assertEquals(10L, cache.paquetes[1L]!!.prueba!!.id)
+        assertNull(cache.asignacionesPorUsuario[99L]) // la caché de asignaciones es de cada estudiante
+    }
+
+    @Test fun sin_conexion_se_puede_rendir_con_la_prueba_guardada() = runBlocking {
+        val cache = CacheEvaluacionFalsa()
+        conRed(cache, listOf(asignada(usados = 2))).cargar(ESTUDIANTE, 1)
+
+        val r = sinRed(cache).cargar(ESTUDIANTE, 1)
+
+        val carga = (r as ResultadoRemoto.Ok<CargaPrueba>).valor
+        assertTrue(carga is CargaPrueba.Lista)
+        val lista = (carga as CargaPrueba.Lista).prueba
+        assertEquals(3, lista.preguntas.size)
+        assertEquals(2, lista.intentosUsados) // los usados salen de la asignación guardada
+        assertEquals(3, lista.limiteIntentos)
+    }
+
+    @Test fun sin_conexion_y_sin_nada_guardado_informa_sin_conexion() = runBlocking {
+        val r = sinRed(CacheEvaluacionFalsa()).cargar(ESTUDIANTE, 1)
+
+        assertTrue(r is ResultadoRemoto.SinConexion)
+    }
+
+    @Test fun sin_conexion_con_la_asignacion_pero_sin_el_paquete_informa_sin_conexion() = runBlocking {
+        val cache = CacheEvaluacionFalsa()
+        cache.guardarAsignaciones(ESTUDIANTE, listOf(asignada()))
+
+        val r = sinRed(cache).cargar(ESTUDIANTE, 1)
+
+        assertTrue(r is ResultadoRemoto.SinConexion)
+    }
+
+    @Test fun sin_conexion_la_ventana_se_valida_con_la_fecha_del_telefono() = runBlocking {
+        val cache = CacheEvaluacionFalsa()
+        conRed(cache, listOf(asignadaConFechas("2026-11-01", "2026-12-31", rendicion = "2026-11-25"))).cargar(ESTUDIANTE, 1)
+
+        // El teléfono dice 26-11: la prueba ya cerró aunque no haya red para preguntarle al servidor.
+        val r = sinRed(cache, hoy = LocalDate.of(2026, 11, 26)).cargar(ESTUDIANTE, 1)
+
+        assertEquals(CargaPrueba.YaCerrada(LocalDate.of(2026, 11, 25)), (r as ResultadoRemoto.Ok<CargaPrueba>).valor)
+    }
+
+    @Test fun si_la_cache_falla_al_guardar_igual_se_puede_rendir() = runBlocking {
+        val servidor = servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), listOf(asignada()), cache = CacheEvaluacionFalsa(fallaAlGuardar = true))
+
+        val r = servidor.cargar(ESTUDIANTE, 1)
+
+        assertTrue((r as ResultadoRemoto.Ok<CargaPrueba>).valor is CargaPrueba.Lista)
     }
 }

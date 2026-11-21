@@ -236,4 +236,31 @@ class BandejaIntentosTest {
 
         assertEquals(0, avisos)
     }
+
+    // ---- la caché de intentos usados se mantiene al día
+    @Test fun cada_intento_aceptado_avisa_para_sumarlo_a_los_usados_guardados() = runBlocking {
+        val avisos = mutableListOf<Pair<Long, Long>>()
+        val b = BandejaIntentos(ProgresoFalso(), DaoFalso(), alAceptar = { u, o -> avisos.add(u to o) })
+        b.guardar(usuario, intento("a", objetivo = 1))
+        b.guardar(usuario, intento("b", objetivo = 3))
+
+        b.enviar(usuario)
+
+        assertEquals(listOf(usuario to 1L, usuario to 3L), avisos)
+    }
+
+    @Test fun un_duplicado_o_un_rechazo_no_se_suman_a_los_usados() = runBlocking {
+        val avisos = mutableListOf<Pair<Long, Long>>()
+        val api = ProgresoFalso(resultados = mapOf(
+            "a" to ResultadoIntentoDto("a", "DUPLICADO"),
+            "b" to ResultadoIntentoDto("b", "RECHAZADO", "LIMITE_INTENTOS")
+        ))
+        val b = BandejaIntentos(api, DaoFalso(), alAceptar = { u, o -> avisos.add(u to o) })
+        b.guardar(usuario, intento("a"))
+        b.guardar(usuario, intento("b", fecha = "2026-11-21T15:05:00Z"))
+
+        b.enviar(usuario)
+
+        assertTrue(avisos.isEmpty())
+    }
 }
