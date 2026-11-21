@@ -3,6 +3,7 @@ package com.example.mpazpro.data.model
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class VentanaPruebaTest {
@@ -44,8 +45,13 @@ class VentanaPruebaTest {
     }
 
     @Test fun una_ventana_invertida_nunca_deja_rendir() {
-        // Habilitación después de la rendición: no hay ningún día válido.
-        assertEquals(DisponibilidadPrueba.YaCerrada(d("2026-11-10")), evaluar("2026-11-15", hab = "2026-11-20", rend = "2026-11-10"))
+        // Habilitación (20-11) posterior a la rendición (10-11): ningún día es válido.
+        assertEquals(DisponibilidadPrueba.AunNoDisponible(d("2026-11-20")), evaluar("2026-11-15", hab = "2026-11-20", rend = "2026-11-10"))
+        assertEquals(DisponibilidadPrueba.YaCerrada(d("2026-11-10")), evaluar("2026-11-25", hab = "2026-11-20", rend = "2026-11-10"))
+        for (dia in 1..30) {
+            val hoy = "2026-11-%02d".format(dia)
+            assertNotEquals(DisponibilidadPrueba.EnFecha, evaluar(hoy, hab = "2026-11-20", rend = "2026-11-10"))
+        }
     }
 
     // El servidor recibe el instante en UTC («Z») y lo pasa al día de calendario de Santiago. En noviembre Chile está en UTC-3.

@@ -260,7 +260,7 @@ class PruebaServidorTest {
         )
 
     private suspend fun cargaCon(asignacion: AsignacionEstudianteDto): CargaPrueba =
-        (servidorCon(paquete(listOf(p1), enPruebaNormal), listOf(asignacion)).cargar(1) as ResultadoRemoto.Ok<CargaPrueba>).valor
+        (servidorCon(paquete(listOf(p1, p2, p3), enPruebaNormal), listOf(asignacion)).cargar(1) as ResultadoRemoto.Ok<CargaPrueba>).valor
 
     @Test fun antes_de_la_habilitacion_de_la_prueba_se_avisa_cuando_se_abre() = runBlocking {
         // La asignación ya empezó, pero la docente habilitó la prueba para el 25-11.
