@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.mpazpro.data.model.Unidad
 import com.example.mpazpro.data.remote.dto.AsignacionEstudianteDto
 import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.AvanceServidor
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.UnidadRepository
 import com.example.mpazpro.data.repository.UsuarioRepository
@@ -39,7 +40,8 @@ class EstudianteUnidadesViewModel(
     private val unidadRepository: UnidadRepository,
     evaluacionRepository: EvaluacionRepository,
     usuarioRepository: UsuarioRepository,
-    private val asignacionRepository: AsignacionRepository
+    private val asignacionRepository: AsignacionRepository,
+    private val avance: AvanceServidor
 ) : ViewModel() {
 
     private val estudianteId: Long = savedStateHandle.get<Long>("estudianteId") ?: -1L
@@ -53,6 +55,8 @@ class EstudianteUnidadesViewModel(
     fun recargar() {
         viewModelScope.launch {
             asignacionRepository.registrarConexion()
+            // Envía el avance que haya quedado pendiente (por ejemplo, hecho sin conexión).
+            if (estudianteId > 0) avance.sincronizar(estudianteId)
             unidadRepository.actualizarDesdeServidor()
             _delServidor.value = asignacionRepository.misAsignacionesDelServidor()
                 .mapNotNull { asignacion ->

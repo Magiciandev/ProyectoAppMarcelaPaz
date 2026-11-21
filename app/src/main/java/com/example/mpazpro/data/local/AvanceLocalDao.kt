@@ -23,6 +23,10 @@ interface AvanceLocalDao {
     @Query("SELECT DISTINCT objetivoId FROM item_completado WHERE usuarioId = :usuarioId")
     suspend fun objetivosConAvance(usuarioId: Long): List<Long>
 
+    /** Borra lo hecho hasta el último reinicio del docente (inclusive): ya no cuenta. */
+    @Query("DELETE FROM item_completado WHERE usuarioId = :usuarioId AND completadoEn <= :hastaSegundos")
+    suspend fun borrarHasta(usuarioId: Long, hastaSegundos: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun guardarTotales(totales: TotalesObjetivo)
 

@@ -9,6 +9,7 @@ import com.example.mpazpro.data.model.SesionPrueba
 import com.example.mpazpro.data.remote.ResultadoRemoto
 import com.example.mpazpro.data.repository.ActividadPracticable
 import com.example.mpazpro.data.repository.ActividadesServidor
+import com.example.mpazpro.data.repository.AvanceServidor
 import com.example.mpazpro.data.repository.UnidadRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,14 +25,18 @@ sealed interface ActividadesUiState {
 }
 
 // Practicar las actividades de una unidad del servidor: elegir una, resolverla pregunta a pregunta y ver cuántas acertó.
-// Es práctica libre: no usa los intentos de la prueba ni se envía al servidor.
+// Es práctica libre: no usa los intentos de la prueba. Al terminar una actividad se anota como completada y el avance
+// del objetivo se envía al servidor (si no hay conexión queda anotado y se envía después).
 class ActividadesViewModel(
     savedStateHandle: SavedStateHandle,
     private val unidades: UnidadRepository,
-    private val servidor: ActividadesServidor
+    private val servidor: ActividadesServidor,
+    private val avance: AvanceServidor
 ) : ViewModel() {
 
     private val unidadId: Long = savedStateHandle.get<Long>("unidadId") ?: -1L
+    private val estudianteId: Long = savedStateHandle.get<Long>("estudianteId") ?: -1L
+    private var objetivoId: Long? = null
 
     private val _uiState = MutableStateFlow<ActividadesUiState>(ActividadesUiState.Cargando)
     val uiState: StateFlow<ActividadesUiState> = _uiState.asStateFlow()
@@ -45,6 +50,7 @@ class ActividadesViewModel(
     private fun cargar() {
         viewModelScope.launch {
             val objetivoId = unidades.objetivoServidorDe(unidadId)
+            this@ActividadesViewModel.objetivoId = objetivoId
             if (objetivoId == null) {
                 _uiState.value = ActividadesUiState.Mensaje(MensajesPrueba.SIN_UNIDAD, esError = true)
                 return@launch
@@ -77,9 +83,20 @@ class ActividadesViewModel(
         val a = actual ?: return
         val s = sesion ?: return
         if (_uiState.value !is ActividadesUiState.Practicando) return
-        _uiState.value =
-            if (s.siguiente()) ActividadesUiState.Resultado(a.titulo, s.puntajeObtenido().toInt(), s.preguntas.size)
-            else practicando(a, s)
+        if (s.siguiente()) {
+            _uiState.value = ActividadesUiState.Resultado(a.titulo, s.puntajeObtenido().toInt(), s.preguntas.size)
+            registrarCompletada(a)
+        } else {
+            _uiState.value = practicando(a, s)
+        }
+    }
+
+    // Terminar la actividad (acierte o no) la deja completada. Los errores de red no se muestran: se reintenta después.
+    private fun registrarCompletada(a: ActividadPracticable) {
+        val objetivo = objetivoId ?: return
+        if (estudianteId <= 0) return
+        val dificultades = actividades.map { it.dificultad }
+        viewModelScope.launch { avance.actividadCompletada(estudianteId, objetivo, a.id, a.dificultad, dificultades) }
     }
 
     fun volverALista() {

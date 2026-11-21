@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.AvanceServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
@@ -30,7 +31,8 @@ class MpazViewModelFactory(
     private val pruebaServidor: PruebaServidor,
     private val actividadesServidor: ActividadesServidor,
     private val monitoreoServidor: MonitoreoServidor,
-    private val informeServidor: InformeServidor
+    private val informeServidor: InformeServidor,
+    private val avanceServidor: AvanceServidor
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -50,17 +52,17 @@ class MpazViewModelFactory(
             modelClass.isAssignableFrom(PreguntasEditorViewModel::class.java) ->
                 PreguntasEditorViewModel(handle, evaluacionRepository) as T
             modelClass.isAssignableFrom(EstudianteUnidadesViewModel::class.java) ->
-                EstudianteUnidadesViewModel(handle, unidadRepository, evaluacionRepository, usuarioRepository, asignacionRepository) as T
+                EstudianteUnidadesViewModel(handle, unidadRepository, evaluacionRepository, usuarioRepository, asignacionRepository, avanceServidor) as T
             modelClass.isAssignableFrom(EvaluacionViewModel::class.java) ->
                 EvaluacionViewModel(handle, evaluacionRepository, asignacionRepository) as T
             modelClass.isAssignableFrom(PruebaServidorViewModel::class.java) ->
                 PruebaServidorViewModel(handle, unidadRepository, pruebaServidor) as T
             modelClass.isAssignableFrom(ActividadesViewModel::class.java) ->
-                ActividadesViewModel(handle, unidadRepository, actividadesServidor) as T
+                ActividadesViewModel(handle, unidadRepository, actividadesServidor, avanceServidor) as T
             modelClass.isAssignableFrom(AsignarViewModel::class.java) ->
                 AsignarViewModel(handle, asignacionRepository) as T
             modelClass.isAssignableFrom(ContenidoViewModel::class.java) ->
-                ContenidoViewModel(handle, unidadRepository) as T
+                ContenidoViewModel(handle, unidadRepository, avanceServidor) as T
             modelClass.isAssignableFrom(InformesListaViewModel::class.java) ->
                 InformesListaViewModel(monitoreoServidor) as T
             modelClass.isAssignableFrom(InformeViewModel::class.java) ->
