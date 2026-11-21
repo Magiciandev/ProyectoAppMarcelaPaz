@@ -20,6 +20,7 @@ import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.AsignacionServidor
 import com.example.mpazpro.data.repository.AvanceServidor
+import com.example.mpazpro.data.repository.BandejaIntentos
 import com.example.mpazpro.data.repository.AprobacionServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.ActividadesServidor
@@ -101,7 +102,9 @@ class MainActivity : ComponentActivity() {
             informeServidor = InformeServidor(cliente.progreso) {
                 baseDeDatos.catalogoCacheDao().objetivos().associate { it.id to it.codigo }
             },
-            avanceServidor = avanceServidor
+            avanceServidor = avanceServidor,
+            // Intentos de prueba terminados: se guardan en Room y se envían cuando hay conexión.
+            bandejaIntentos = BandejaIntentos(cliente.progreso, baseDeDatos.intentoPendienteDao())
         )
 
         Notificaciones.crearCanal(applicationContext)

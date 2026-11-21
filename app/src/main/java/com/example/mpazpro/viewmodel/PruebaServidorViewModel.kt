@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mpazpro.data.model.FormatoPuntaje
 import com.example.mpazpro.data.model.MensajesPrueba
+import com.example.mpazpro.data.model.PoliticaIntentos
 import com.example.mpazpro.data.model.PreguntaPrueba
 import com.example.mpazpro.data.model.PruebaParaRendir
 import com.example.mpazpro.data.model.SesionPrueba
 import com.example.mpazpro.data.remote.ResultadoRemoto
 import com.example.mpazpro.data.remote.dto.SyncRequestDto
+import com.example.mpazpro.data.repository.BandejaIntentos
 import com.example.mpazpro.data.repository.CargaPrueba
 import com.example.mpazpro.data.repository.ConstructorIntento
 import com.example.mpazpro.data.repository.PruebaServidor
@@ -40,18 +42,23 @@ sealed interface PruebaServidorUiState {
         val porcentaje: Int,
         val registrado: Boolean,
         val mensaje: String?,
-        val intentosRestantes: Int
+        val intentosRestantes: Int,
+        // El intento quedó guardado en el teléfono porque no había conexión; se enviará después.
+        val pendiente: Boolean = false
     ) : PruebaServidorUiState
 }
 
-// Rinde la prueba de una unidad del servidor: carga las preguntas, lleva la sesión y, al terminar, envía el intento.
+// Rinde la prueba de una unidad del servidor: carga las preguntas, lleva la sesión y, al terminar, guarda el intento en
+// el teléfono y lo envía. Sin conexión queda guardado y se envía después; los intentos guardados se descuentan de los que quedan.
 class PruebaServidorViewModel(
     savedStateHandle: SavedStateHandle,
     private val unidades: UnidadRepository,
-    private val servidor: PruebaServidor
+    private val servidor: PruebaServidor,
+    private val bandeja: BandejaIntentos
 ) : ViewModel() {
 
     private val unidadId: Long = savedStateHandle.get<Long>("unidadId") ?: -1L
+    private val estudianteId: Long = savedStateHandle.get<Long>("estudianteId") ?: -1L
 
     private val _uiState = MutableStateFlow<PruebaServidorUiState>(PruebaServidorUiState.Cargando)
     val uiState: StateFlow<PruebaServidorUiState> = _uiState.asStateFlow()
@@ -65,6 +72,7 @@ class PruebaServidorViewModel(
 
     // Se arma una sola vez al terminar. Si el envío falla, «Reintentar» manda el mismo lote (mismos uuid).
     private var solicitud: SyncRequestDto? = null
+    private var guardado = false
 
     init { cargar() }
 
@@ -83,18 +91,21 @@ class PruebaServidorViewModel(
         }
     }
 
-    private fun alCargar(carga: CargaPrueba): PruebaServidorUiState = when (carga) {
+    private suspend fun alCargar(carga: CargaPrueba): PruebaServidorUiState = when (carga) {
         is CargaPrueba.SinAsignacion -> PruebaServidorUiState.Mensaje(MensajesPrueba.SIN_ASIGNACION)
         is CargaPrueba.AunNoDisponible -> PruebaServidorUiState.Mensaje(MensajesPrueba.aunNoDisponible(carga.desde))
         is CargaPrueba.YaCerrada -> PruebaServidorUiState.Mensaje(MensajesPrueba.yaCerrada(carga.hasta))
         is CargaPrueba.SinPrueba -> PruebaServidorUiState.Mensaje(MensajesPrueba.SIN_PRUEBA)
         is CargaPrueba.NoSoportada -> PruebaServidorUiState.Mensaje(MensajesPrueba.NO_SOPORTADA)
         is CargaPrueba.Lista -> {
-            prueba = carga.prueba
-            if (carga.prueba.intentosRestantes == 0) {
-                PruebaServidorUiState.Mensaje(MensajesPrueba.bloqueada(carga.prueba.limiteIntentos))
+            // Los intentos guardados sin enviar cuentan como usados (regla D7: valen solo los primeros N).
+            val pendientes = bandeja.pendientesDe(estudianteId, carga.prueba.objetivoId)
+            val rendible = carga.prueba.copy(intentosUsados = PoliticaIntentos.usados(carga.prueba.intentosUsados, pendientes))
+            prueba = rendible
+            if (rendible.intentosRestantes == 0) {
+                PruebaServidorUiState.Mensaje(MensajesPrueba.bloqueada(rendible.limiteIntentos))
             } else {
-                val nueva = SesionPrueba(carga.prueba.preguntas)
+                val nueva = SesionPrueba(rendible.preguntas)
                 sesion = nueva
                 inicio = Instant.now()
                 enCurso(nueva)
@@ -136,19 +147,30 @@ class PruebaServidorViewModel(
             prueba = p, numeroIntento = p.intentosUsados + 1, respuestas = s.respuestasDadas(),
             fechaHora = inicio ?: Instant.now(), nuevoUuid = { UUID.randomUUID().toString() }
         ).also { solicitud = it }
+        val intento = lote.intentos.single()
         _uiState.value = PruebaServidorUiState.Enviando
         viewModelScope.launch {
-            _uiState.value = when (val envio = servidor.enviar(lote)) {
-                is ResultadoRemoto.Ok -> finalizada(p, s, envio.valor.intentos.firstOrNull()?.resultado, envio.valor.intentos.firstOrNull()?.motivo)
+            // Primero se guarda en el teléfono: si falla el envío o se cierra la app, el resultado no se pierde.
+            if (!guardado) {
+                bandeja.guardar(estudianteId, intento)
+                guardado = true
+            }
+            _uiState.value = when (val envio = bandeja.enviar(estudianteId)) {
+                is ResultadoRemoto.Ok -> {
+                    val respuesta = envio.valor[intento.uuid]
+                    if (respuesta == null) finalizada(p, s, null, null, pendiente = true)
+                    else finalizada(p, s, respuesta.resultado, respuesta.motivo)
+                }
                 is ResultadoRemoto.ErrorHttp -> PruebaServidorUiState.ErrorAlEnviar(envio.mensaje)
-                is ResultadoRemoto.SinConexion ->
-                    PruebaServidorUiState.ErrorAlEnviar("${envio.mensaje}. Tu resultado no se perdió: vuelve a intentarlo.")
+                is ResultadoRemoto.SinConexion -> finalizada(p, s, null, null, pendiente = true)
             }
         }
     }
 
     // DUPLICADO significa que el servidor ya tenía este intento (por ejemplo, la respuesta anterior se perdió).
-    private fun finalizada(p: PruebaParaRendir, s: SesionPrueba, resultado: String?, motivo: String?): PruebaServidorUiState {
+    private fun finalizada(
+        p: PruebaParaRendir, s: SesionPrueba, resultado: String?, motivo: String?, pendiente: Boolean = false
+    ): PruebaServidorUiState {
         val registrado = resultado == "ACEPTADO" || resultado == "DUPLICADO"
         val obtenido = s.puntajeObtenido()
         val maximo = s.puntajeMaximo()
@@ -158,7 +180,9 @@ class PruebaServidorViewModel(
             porcentaje = FormatoPuntaje.porcentaje(obtenido, maximo),
             registrado = registrado,
             mensaje = if (registrado) null else MensajesPrueba.motivoRechazo(motivo),
-            intentosRestantes = if (registrado) (p.limiteIntentos - (p.intentosUsados + 1)).coerceAtLeast(0) else p.intentosRestantes
+            // Un intento guardado sin enviar ya cuenta como usado; uno rechazado no.
+            intentosRestantes = if (registrado || pendiente) (p.limiteIntentos - (p.intentosUsados + 1)).coerceAtLeast(0) else p.intentosRestantes,
+            pendiente = pendiente
         )
     }
 }

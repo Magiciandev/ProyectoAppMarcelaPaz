@@ -8,6 +8,7 @@ import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.AvanceServidor
+import com.example.mpazpro.data.repository.BandejaIntentos
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
@@ -32,7 +33,8 @@ class MpazViewModelFactory(
     private val actividadesServidor: ActividadesServidor,
     private val monitoreoServidor: MonitoreoServidor,
     private val informeServidor: InformeServidor,
-    private val avanceServidor: AvanceServidor
+    private val avanceServidor: AvanceServidor,
+    private val bandejaIntentos: BandejaIntentos
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -56,7 +58,7 @@ class MpazViewModelFactory(
             modelClass.isAssignableFrom(EvaluacionViewModel::class.java) ->
                 EvaluacionViewModel(handle, evaluacionRepository, asignacionRepository) as T
             modelClass.isAssignableFrom(PruebaServidorViewModel::class.java) ->
-                PruebaServidorViewModel(handle, unidadRepository, pruebaServidor) as T
+                PruebaServidorViewModel(handle, unidadRepository, pruebaServidor, bandejaIntentos) as T
             modelClass.isAssignableFrom(ActividadesViewModel::class.java) ->
                 ActividadesViewModel(handle, unidadRepository, actividadesServidor, avanceServidor) as T
             modelClass.isAssignableFrom(AsignarViewModel::class.java) ->

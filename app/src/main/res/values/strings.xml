@@ -106,6 +106,7 @@
     <string name="prueba_reintentar">Reintentar</string>
     <string name="prueba_resultado_puntos">Obtuviste %1$s de %2$s puntos</string>
     <string name="prueba_porcentaje">%1$d%%</string>
+    <string name="prueba_guardado_pendiente">Tu intento quedó guardado en este teléfono. Se enviará cuando haya conexión.</string>
     <string name="prueba_no_registrado">Tu intento no quedó registrado. %1$s</string>
     <string name="asignar_titulo">Asignar unidad</string>
     <string name="asignar_curso">Curso</string>

@@ -12,6 +12,7 @@ import com.example.mpazpro.data.model.CacheUnidad
 import com.example.mpazpro.data.model.Configuracion
 import com.example.mpazpro.data.model.HistorialUnidad
 import com.example.mpazpro.data.model.Intento
+import com.example.mpazpro.data.model.IntentoPendiente
 import com.example.mpazpro.data.model.ItemCompletado
 import com.example.mpazpro.data.model.Observacion
 import com.example.mpazpro.data.model.Pregunta
@@ -28,10 +29,12 @@ import com.example.mpazpro.data.model.Usuario
         // v5: caché del catálogo que entrega el backend
         CacheAsignatura::class, CacheUnidad::class, CacheObjetivo::class, CacheContenido::class,
         // v7: avance del estudiante (ítems completados y totales por objetivo)
-        ItemCompletado::class, TotalesObjetivo::class
+        ItemCompletado::class, TotalesObjetivo::class,
+        // v8: intentos de prueba terminados que esperan confirmación del servidor
+        IntentoPendiente::class
     ],
-    // v7: tablas del avance del estudiante
-    version = 7,
+    // v8: cola de intentos pendientes
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -45,6 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun informeDao(): InformeDao
     abstract fun catalogoCacheDao(): CatalogoCacheDao
     abstract fun avanceLocalDao(): AvanceLocalDao
+    abstract fun intentoPendienteDao(): IntentoPendienteDao
 
     companion object {
         @Volatile

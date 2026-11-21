@@ -223,6 +223,12 @@ private fun ResultadoVista(estado: PruebaServidorUiState.Finalizada, onVolver: (
             style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center
         )
         Text(stringResource(R.string.prueba_porcentaje, estado.porcentaje), style = MaterialTheme.typography.headlineMedium)
+        if (estado.pendiente) {
+            Text(
+                stringResource(R.string.prueba_guardado_pendiente),
+                style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center
+            )
+        }
         estado.mensaje?.let {
             Text(
                 stringResource(R.string.prueba_no_registrado, it),
