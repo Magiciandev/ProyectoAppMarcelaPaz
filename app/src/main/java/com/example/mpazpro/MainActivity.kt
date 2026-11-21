@@ -23,6 +23,7 @@ import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.ActividadesServidor
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
+import com.example.mpazpro.data.repository.InformeServidor
 import com.example.mpazpro.data.repository.MonitoreoServidor
 import com.example.mpazpro.ui.components.Notificaciones
 import com.example.mpazpro.data.repository.SemillaDatos
@@ -77,7 +78,10 @@ class MainActivity : ComponentActivity() {
             sesionStore = sesion,
             pruebaServidor = PruebaServidor(cliente.evaluaciones, cliente.progreso),
             actividadesServidor = ActividadesServidor(cliente.evaluaciones),
-            monitoreoServidor = MonitoreoServidor(cliente.progreso)
+            monitoreoServidor = MonitoreoServidor(cliente.progreso),
+            informeServidor = InformeServidor(cliente.progreso) {
+                baseDeDatos.catalogoCacheDao().objetivos().associate { it.id to it.codigo }
+            }
         )
 
         Notificaciones.crearCanal(applicationContext)

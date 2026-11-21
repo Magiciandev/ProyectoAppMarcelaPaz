@@ -10,6 +10,7 @@ import com.example.mpazpro.data.repository.AsignacionRepository
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
+import com.example.mpazpro.data.repository.InformeServidor
 import com.example.mpazpro.data.repository.MonitoreoServidor
 import com.example.mpazpro.data.repository.PruebaServidor
 import com.example.mpazpro.data.repository.UnidadRepository
@@ -28,7 +29,8 @@ class MpazViewModelFactory(
     private val sesionStore: SesionStore,
     private val pruebaServidor: PruebaServidor,
     private val actividadesServidor: ActividadesServidor,
-    private val monitoreoServidor: MonitoreoServidor
+    private val monitoreoServidor: MonitoreoServidor,
+    private val informeServidor: InformeServidor
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -62,7 +64,7 @@ class MpazViewModelFactory(
             modelClass.isAssignableFrom(InformesListaViewModel::class.java) ->
                 InformesListaViewModel(monitoreoServidor) as T
             modelClass.isAssignableFrom(InformeViewModel::class.java) ->
-                InformeViewModel(handle, informeRepository) as T
+                InformeViewModel(handle, informeServidor) as T
             modelClass.isAssignableFrom(CatalogoViewModel::class.java) ->
                 CatalogoViewModel(catalogoRepository, sesionStore) as T
             else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
