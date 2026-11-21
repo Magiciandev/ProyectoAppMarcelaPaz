@@ -20,9 +20,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,9 +56,22 @@ fun UnidadesScreen(
     onVolver: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val mensaje by viewModel.mensaje.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+
+    // Solo la UTP trae las unidades del servidor al abrir la pantalla.
+    LaunchedEffect(editable) { if (editable) viewModel.actualizar() }
+    LaunchedEffect(mensaje) {
+        mensaje?.let {
+            snackbar.showSnackbar(it)
+            viewModel.mensajeMostrado()
+        }
+    }
+
     UnidadesContenido(
         uiState = uiState, editable = editable, onAbrir = onAbrir,
-        onNuevaUnidad = onNuevaUnidad, onVolver = onVolver
+        onNuevaUnidad = onNuevaUnidad, onVolver = onVolver,
+        onActualizar = { viewModel.actualizar(manual = true) }, snackbarHostState = snackbar
     )
 }
 
@@ -64,7 +82,9 @@ fun UnidadesContenido(
     editable: Boolean,
     onAbrir: (Long) -> Unit,
     onNuevaUnidad: () -> Unit,
-    onVolver: () -> Unit
+    onVolver: () -> Unit,
+    onActualizar: () -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     IconosBarraEstado(iconosClaros = isSystemInDarkTheme())
 
@@ -79,9 +99,15 @@ fun UnidadesContenido(
                             contentDescription = stringResource(R.string.volver)
                         )
                     }
+                },
+                actions = {
+                    if (editable) {
+                        TextButton(onClick = onActualizar) { Text(stringResource(R.string.unidades_actualizar)) }
+                    }
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (editable) {
                 ExtendedFloatingActionButton(

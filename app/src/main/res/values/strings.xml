@@ -20,6 +20,7 @@
     <!-- Lista de unidades -->
     <string name="unidades_titulo">Unidades</string>
     <string name="unidades_nueva">Nueva unidad</string>
+    <string name="unidades_actualizar">Actualizar</string>
     <string name="unidades_vacio">Aún no hay unidades. Crea la primera con el botón de abajo.</string>
 
     <!-- Formulario de unidad -->
@@ -52,7 +53,10 @@
     <string name="detalle_titulo">Detalle de unidad</string>
     <string name="detalle_historial">Historial</string>
     <string name="detalle_enviar">Enviar a revisión</string>
-    <string name="detalle_aprobar">Aprobar y publicar</string>
+    <string name="detalle_autorizar">Autorizar</string>
+    <string name="detalle_publicar">Publicar</string>
+    <string name="detalle_reabrir">Reabrir como borrador</string>
+    <string name="detalle_asignar_pronto">Esta unidad viene del servidor: asignarla a un curso llega en el siguiente paso.</string>
     <string name="detalle_rechazar">Rechazar</string>
     <string name="detalle_deshabilitar">Deshabilitar</string>
     <string name="detalle_preguntas">Editar preguntas de la prueba</string>

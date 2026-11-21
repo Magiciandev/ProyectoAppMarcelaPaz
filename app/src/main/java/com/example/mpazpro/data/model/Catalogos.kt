@@ -13,7 +13,9 @@ object Asignaturas {
 object EstadoUnidad {
     const val BORRADOR = "Borrador"
     const val EN_REVISION = "En revisión"
+    const val AUTORIZADO = "Autorizado"
     const val PUBLICADO = "Publicado"
+    const val DESHABILITADO = "Deshabilitado"
 }
 
 object Roles {

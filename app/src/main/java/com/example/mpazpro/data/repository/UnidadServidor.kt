@@ -25,6 +25,10 @@ object MapeoUnidad {
     fun idAsignatura(nombreLocal: String, remotas: List<AsignaturaDto>): Long? =
         remotas.firstOrNull { it.nombre.startsWith(nombreLocal, ignoreCase = true) }?.id
 
+    /** Al revés: «Lenguaje y Comunicación» (servidor) se muestra como «Lenguaje» (app). */
+    fun nombreLocal(nombreRemoto: String): String =
+        Asignaturas.todas.firstOrNull { nombreRemoto.startsWith(it, ignoreCase = true) } ?: nombreRemoto
+
     /** Igual que los datos del servidor: LEN-OA05, MAT-OA01, CIE-OA04, HIS-OA01 (máximo 12 caracteres). */
     fun codigoObjetivo(asignaturaLocal: String, oa: String): String {
         val prefijo = when (asignaturaLocal) {

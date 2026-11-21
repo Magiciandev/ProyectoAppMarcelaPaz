@@ -53,6 +53,11 @@ Room lo que necesita para funcionar sin conexión (ejemplo: `CatalogoRepository`
   el backend. Cada perfil ve lo que su rol puede ver: UTP todo; docente lo autorizado y publicado; estudiante lo
   publicado.
 
+Fase 6, paso 2: **los estados de la UTP** (enviar a revisión, autorizar, rechazar, publicar, deshabilitar y reabrir) se
+piden a `ms-admin` cuando la unidad existe en el servidor, y en «Unidades» la UTP trae las del servidor (al abrir la
+pantalla y con el botón «Actualizar»). El servidor puede rechazar el cambio (por ejemplo, enviar a revisión exige una
+prueba final con al menos una pregunta): el motivo se muestra en el detalle de la unidad.
+
 Fase 6, paso 1: **crear una unidad** ahora se hace en el servidor (unidad, objetivo y contenido) y solo después se guarda
 la copia local; hace falta conexión y ser UTP. Lo demás de la app (estados, evaluación, asignación e informes)
 **sigue funcionando con la base local**: se migra en los pasos siguientes de la fase 6 y en la fase 7.

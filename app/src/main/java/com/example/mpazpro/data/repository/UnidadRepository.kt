@@ -4,8 +4,10 @@ import android.net.Uri
 import com.example.mpazpro.data.local.AlmacenImagenes
 import com.example.mpazpro.data.local.HistorialDao
 import com.example.mpazpro.data.local.UnidadDao
+import com.example.mpazpro.data.model.AccionEstado
 import com.example.mpazpro.data.model.EstadoUnidad
 import com.example.mpazpro.data.model.HistorialUnidad
+import com.example.mpazpro.data.model.MapeoEstado
 import com.example.mpazpro.data.model.Unidad
 import com.example.mpazpro.data.remote.ResultadoRemoto
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +19,9 @@ class UnidadRepository(
     private val dao: UnidadDao,
     private val historialDao: HistorialDao,
     private val almacen: AlmacenImagenes,
-    private val servidor: UnidadServidor
+    private val servidor: UnidadServidor,
+    private val aprobaciones: AprobacionServidor,
+    private val catalogo: CatalogoRepository
 ) {
 
     fun observarUnidades(): Flow<List<Unidad>> = dao.observarTodas()
@@ -58,14 +62,60 @@ class UnidadRepository(
             }
         }
 
-    // Cambia el estado y deja la entrada de historial con fecha.
-    suspend fun cambiarEstado(id: Long, nuevoEstado: String, evento: String): Result<Unit> =
+    // Cambia el estado y deja la entrada de historial con fecha. Si la unidad existe en el servidor, el cambio se
+    // pide primero a ms-admin (que valida la transición) y solo si lo acepta se refleja en el teléfono.
+    // Una unidad que solo existe en el teléfono (los datos de ejemplo) cambia de estado solo aquí.
+    suspend fun cambiarEstado(unidad: Unidad, accion: AccionEstado): Result<Unit> =
         withContext(Dispatchers.IO) {
-            runCatching {
-                dao.actualizarEstado(id, nuevoEstado)
-                registrar(id, evento)
+            val objetivoId = unidad.objetivoServidorId
+            if (objetivoId == null) {
+                runCatching { aplicarLocal(unidad.id, accion.hasta, accion.evento) }
+            } else {
+                when (val remoto = aprobaciones.aplicar(objetivoId, accion)) {
+                    is ResultadoRemoto.Ok -> runCatching {
+                        aplicarLocal(unidad.id, MapeoEstado.aLocal(remoto.valor.estadoNuevo), accion.evento)
+                    }
+                    is ResultadoRemoto.ErrorHttp -> Result.failure(IllegalStateException(remoto.mensaje))
+                    is ResultadoRemoto.SinConexion -> Result.failure(IllegalStateException(remoto.mensaje))
+                }
             }
         }
+
+    // Descarga el catálogo del servidor y deja una unidad local por cada objetivo (nueva o puesta al día).
+    // Devuelve cuántas unidades cambiaron. Las unidades que solo existen en el teléfono no se tocan.
+    suspend fun actualizarDesdeServidor(): ResultadoRemoto<Int> =
+        withContext(Dispatchers.IO) {
+            when (val descarga = catalogo.refrescar()) {
+                is ResultadoRemoto.Ok -> ResultadoRemoto.Ok(guardarDelServidor(MapeoCatalogo.aUnidades(descarga.valor)))
+                is ResultadoRemoto.ErrorHttp -> descarga
+                is ResultadoRemoto.SinConexion -> descarga
+            }
+        }
+
+    private suspend fun guardarDelServidor(delServidor: List<Unidad>): Int {
+        var cambios = 0
+        for (nueva in delServidor) {
+            val objetivoId = nueva.objetivoServidorId ?: continue
+            val local = dao.buscarPorObjetivoServidor(objetivoId)
+            if (local == null) {
+                val id = dao.insertar(nueva)
+                registrar(id, "Unidad descargada del servidor")
+                cambios++
+            } else if (local.estado != nueva.estado || local.titulo != nueva.titulo || local.contenido != nueva.contenido) {
+                dao.actualizarDesdeServidor(
+                    local.id, nueva.titulo, nueva.objetivoAprendizaje, nueva.asignatura, nueva.estado, nueva.contenido
+                )
+                if (local.estado != nueva.estado) registrar(local.id, "Estado en el servidor: ${nueva.estado}")
+                cambios++
+            }
+        }
+        return cambios
+    }
+
+    private suspend fun aplicarLocal(id: Long, estado: String, evento: String) {
+        dao.actualizarEstado(id, estado)
+        registrar(id, evento)
+    }
 
     private suspend fun registrar(unidadId: Long, evento: String) {
         historialDao.insertar(HistorialUnidad(unidadId = unidadId, fecha = System.currentTimeMillis(), evento = evento))

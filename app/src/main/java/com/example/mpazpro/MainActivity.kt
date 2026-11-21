@@ -17,6 +17,7 @@ import com.example.mpazpro.data.remote.AutenticacionRemota
 import com.example.mpazpro.data.remote.ClienteApi
 import com.example.mpazpro.data.remote.SesionStore
 import com.example.mpazpro.data.repository.AsignacionRepository
+import com.example.mpazpro.data.repository.AprobacionServidor
 import com.example.mpazpro.data.repository.CatalogoRepository
 import com.example.mpazpro.data.repository.EvaluacionRepository
 import com.example.mpazpro.data.repository.InformeRepository
@@ -51,10 +52,12 @@ class MainActivity : ComponentActivity() {
         val sesion = SesionStore(AlmacenSharedPreferences(applicationContext))
         val cliente = ClienteApi(ApiConfig.baseUrl, sesion)
 
+        val catalogoRepository = CatalogoRepository(cliente.contenidos, baseDeDatos.catalogoCacheDao())
+
         val fabrica = MpazViewModelFactory(
             unidadRepository = UnidadRepository(
                 baseDeDatos.unidadDao(), baseDeDatos.historialDao(), AlmacenImagenes(applicationContext),
-                UnidadServidor(cliente.contenidos)
+                UnidadServidor(cliente.contenidos), AprobacionServidor(cliente.admin), catalogoRepository
             ),
             usuarioRepository = UsuarioRepository(
                 baseDeDatos.usuarioDao(), semilla, AutenticacionRemota(cliente.auth, sesion)
@@ -64,7 +67,7 @@ class MainActivity : ComponentActivity() {
             informeRepository = InformeRepository(
                 baseDeDatos.informeDao(), baseDeDatos.usuarioDao(), baseDeDatos.preguntaDao()
             ),
-            catalogoRepository = CatalogoRepository(cliente.contenidos, baseDeDatos.catalogoCacheDao()),
+            catalogoRepository = catalogoRepository,
             sesionStore = sesion
         )
 
